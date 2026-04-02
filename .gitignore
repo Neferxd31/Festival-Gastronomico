@@ -1,0 +1,5 @@
+
+backend/venv/
+frontend/.env
+frontend/.DS_Store
+.env
