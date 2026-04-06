@@ -1,5 +1,34 @@
-
+# Entorno virtual
 backend/venv/
-frontend/.env
-frontend/.DS_Store
+venv/
+
+# Variables de entorno
 .env
+.env.local
+.env.production
+frontend/.env
+fronted/.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Node
+fronted/node_modules/
+frontend/node_modules/
+node_modules/
+
+# Build
+fronted/dist/
+frontend/dist/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
