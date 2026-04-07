@@ -185,3 +185,28 @@
     border-right-color: var(--border);
   }
 }
+
+.logout-btn {
+  margin-top: 20px;
+  background-color: #f44336;
+  /* Rojo */
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+.user-photo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  border: 2px solid #ff5733;
+}

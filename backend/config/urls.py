@@ -1,22 +1,44 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import json
+import os
 
+# Función para manejar el login de Google
+@csrf_exempt
+def google_auth_receiver(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        token = data.get("token")
+        
+        try:
+            # Validamos el token con Google
+            # Usamos el CLIENT_ID que ya tienes en el .env
+            client_id = os.getenv("GOOGLE_CLIENT_ID")
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), client_id)
+
+            # Si llega aquí, el usuario es real. 
+            # idinfo contiene: email, name, picture, etc.
+            print(f"Usuario autenticado: {idinfo['email']}")
+            
+            return JsonResponse({
+                "status": "success",
+                "user": {
+                    "email": idinfo["email"],
+                    "name": idinfo["name"],
+                    "picture": idinfo["picture"]
+                }
+            })
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse({"status": "error"}, status=405)
+
+# Rutas del proyecto
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.create_user if hasattr(admin.site, 'create_user') else admin.site.urls),
+    path('api/google-login/', google_auth_receiver), # <--- Este es el puente
 ]

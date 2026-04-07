@@ -5,7 +5,7 @@ from google.auth.transport import requests
 import json
 
 # Reemplaza con tu Client ID de Google
-GOOGLE_CLIENT_ID = "TU_CLIENT_ID_DE_GOOGLE"
+GOOGLE_CLIENT_ID = "847544839508-fv07o4ss37vld92jd034qkta3so8bdde.apps.googleusercontent.com"
 
 @csrf_exempt
 def google_login(request):
