@@ -44,6 +44,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'usuarioapp',
+    'festivalapp',
+    'restauranteapp',
+    'interaccionapp',
+    'resultadoapp'
 ]
 
 MIDDLEWARE = [
