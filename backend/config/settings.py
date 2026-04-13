@@ -32,7 +32,7 @@ DATABASES = {
     "default": dj_database_url.parse(
         DATABASE_URL,
         conn_max_age=600,
-        ssl_require=True,
+        conn_health_checks=True,
     )
 }
 
@@ -42,16 +42,18 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'rest_framework',
+    'corsheaders',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'usuarioapp',
     'festivalapp',
     'restauranteapp',
     'interaccionapp',
-    'resultadoapp'
+    'resultadoapp',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,6 +61,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -93,3 +100,5 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+# Google Auth Settings
+GOOGLE_CLIENT_ID = os.getenv("VITE_GOOGLE_CLIENT_ID") 
