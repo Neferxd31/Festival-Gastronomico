@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
     const [user, setUser] = useState(null);
+    const [error, setError] = useState(null);
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
     // --- EFECTO PARA PERSISTENCIA ---
@@ -16,6 +17,7 @@ export default function Login() {
     }, []);
 
     const handleSuccess = async (response) => {
+        setError(null);
         const userObject = jwtDecode(response.credential);
 
         try {
@@ -30,10 +32,17 @@ export default function Login() {
                 // GUARDAR EN LOCALSTORAGE
                 localStorage.setItem('user_session', JSON.stringify(userObject));
                 setUser(userObject);
+            } else {
+                setError("No se pudo iniciar sesión. Intenta de nuevo.");
             }
         } catch (error) {
             console.error("Error al conectar con el servidor", error);
+            setError("Error al conectar con el servidor. Intenta más tarde.");
         }
+    };
+
+    const handleError = () => {
+        setError("Inicio de sesión cancelado o fallido. Intenta de nuevo.");
     };
 
     const handleLogout = () => {
@@ -52,9 +61,12 @@ export default function Login() {
                     {!user ? (
                         <div className="login-section">
                             <p>Inicia sesión para empezar a votar por tus platos favoritos</p>
+                            {error && (
+                                <p className="login-error">{error}</p>
+                            )}
                             <GoogleLogin
                                 onSuccess={handleSuccess}
-                                onError={() => console.log('Error en el login')}
+                                onError={handleError}
                                 theme="filled_blue"
                                 shape="pill"
                             />
