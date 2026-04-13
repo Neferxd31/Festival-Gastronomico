@@ -70,7 +70,7 @@ function LoginContent() {
                     </div>
                 ) : (
                     <div className="welcome-msg">
-                        <img src={user.picture} alt="Avatar" className="user-photo" />
+                        <img src={user.picture} alt="Avatar" className="user-photo" referrerPolicy="no-referrer" />
                         <h3>¡Hola, {user.name}!</h3>
                         <p>{user.email}</p>
                         <button onClick={handleLogout} className="logout-btn">
