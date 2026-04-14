@@ -109,3 +109,88 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* ── Tabs ── */
+.login-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+.tab-btn {
+    flex: 1;
+    padding: 0.6rem;
+    border: none;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #555;
+    transition: background 0.2s, color 0.2s;
+}
+.tab-btn.active {
+    background: #e85d24;
+    color: white;
+    font-weight: 600;
+}
+
+/* ── Formulario admin ── */
+.admin-form { display: flex; flex-direction: column; gap: 1rem; }
+.field-group { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
+.field-group label { font-size: 0.9rem; color: #555; font-weight: 500; }
+.field-group input {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.field-group input:focus { border-color: #e85d24; }
+.admin-btn {
+    padding: 0.75rem;
+    background: #e85d24;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+}
+.admin-btn:hover:not(:disabled) { background: #c94e1e; }
+.admin-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Panel ── */
+.panel-screen { min-height: 100vh; background: #f8f8f8; }
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: white;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.panel-user { display: flex; align-items: center; gap: 1rem; color: #555; }
+.panel-main { padding: 2rem; max-width: 900px; margin: 0 auto; }
+.panel-main h2 { margin-bottom: 0.25rem; }
+.panel-main > p { color: #888; margin-bottom: 2rem; }
+.panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.panel-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.25rem;
+    border: 1px solid #eee;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s;
+}
+.panel-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.panel-card h3 { margin: 0 0 0.5rem; font-size: 1rem; color: #333; }
+.panel-card span { font-size: 0.8rem; color: #aaa; }
