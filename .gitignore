@@ -1,34 +1,67 @@
-# Entorno virtual
-backend/venv/
-venv/
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
 
+# ========================
+# Entorno virtual
+# ========================
+venv/
+.venv/
+env/
+backend/venv/
+
+# ========================
+# Django
+# ========================
+*.sqlite3
+*.log
+media/
+staticfiles/
+static/
+
+# ========================
 # Variables de entorno
+# ========================
 .env
 .env.local
 .env.production
+.env.staging
 frontend/.env
 fronted/.env
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.sqlite3
-
-# Node
+# ========================
+# Node / Frontend
+# ========================
+node_modules/
 fronted/node_modules/
 frontend/node_modules/
-node_modules/
-
-# Build
 fronted/dist/
 frontend/dist/
 dist/
+.npm/
 
+# ========================
 # OS
+# ========================
 .DS_Store
 Thumbs.db
+desktop.ini
 
+# ========================
+# IDEs
+# ========================
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ========================
 # Claude Code
+# ========================
 .claude/
