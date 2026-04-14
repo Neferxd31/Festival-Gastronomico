@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password  # ← faltaban estos
 
 
 class Usuario(models.Model):
@@ -29,6 +30,7 @@ class Administrador(models.Model):
 
     def set_password(self, raw_password):
         self.password_hash = make_password(raw_password)
+        self.save()
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.password_hash)
@@ -46,7 +48,6 @@ class Votante(models.Model):
     cedula = models.CharField(max_length=20, unique=True, null=True, blank=True)
     google_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     foto_url = models.TextField(null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,19 +1,18 @@
-import { useState } from 'react'
-import './App.css'
-import Login from './views/Login'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Login from './views/Login';
+import AdminPanel from './views/AdminPanel';
+import './App.css';
 
-// 1. Definimos la función del componente App
-function App() {
-  // Aquí puedes declarar estados si los necesitas
-  // const [count, setCount] = useState(0)
-
-  return (
-    <div className="app-container">
-      {/* 2. Renderizamos tu componente de Login */}
-      <Login />
-    </div>
-  )
+export default function App() {
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/"             element={<Login />} />
+                    <Route path="/admin/panel"  element={<AdminPanel />} />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    );
 }
-
-// 3. Exportamos al final
-export default App

@@ -102,3 +102,12 @@ USE_TZ = True
 STATIC_URL = 'static/'
 # Google Auth Settings
 GOOGLE_CLIENT_ID = os.getenv("VITE_GOOGLE_CLIENT_ID") 
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "usuarioapp.authentication.AdminJWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
