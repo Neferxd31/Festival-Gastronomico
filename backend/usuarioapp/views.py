@@ -1,12 +1,25 @@
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from .serializers import LoginAdminSerializer
 from .authentication import AdminJWTAuthentication
 from .permissions import EsAdministrador
 from .utils import generar_token
+from .email_template import reset_password_template
 
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import secrets
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from .serializers import (
+    ResetPasswordSerializer,
+    ResetPasswordTokenSerializer
+)
 
 class LoginAdminView(APIView):
     """
@@ -67,3 +80,91 @@ class PanelAdminView(APIView):
             ],
             "mensaje": f"Panel de administrador activo — {usuario.nombre}.",
         })
+    
+#---------------------VIEW para restablecer contraseña:------------------------------------
+
+class ResetPasswordAPI(APIView):
+    """
+    POST /api/usuarios/reset-password/
+    Paso 1: enviar código al correo
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        admin = serializer.context["admin"]
+        email = serializer.validated_data["email"]
+
+        # Generar código de 6 dígitos
+        token = str(secrets.randbelow(900000) + 100000)
+
+        admin.token_reset = token
+        admin.token_reset_expiry = timezone.now() + timedelta(minutes=15)
+        admin.save()
+
+        # Configurar Brevo
+        configuration = sib_api_v3_sdk.Configuration()
+        configuration.api_key["api-key"] = settings.BREVO_API_KEY
+
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
+            sib_api_v3_sdk.ApiClient(configuration)
+        )
+
+        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+            to=[{"email": email}],
+            sender={
+                "name": "Festival Gastronómico",
+                "email": settings.BREVO_SENDER_EMAIL
+            },
+            subject="Recuperación de contraseña",
+            html_content=reset_password_template(token)
+        )
+
+        try:
+            api_instance.send_transac_email(send_smtp_email)
+        except ApiException:
+            return Response(
+                {"detail": "No fue posible enviar el correo."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            "mensaje": "Se envió el código al correo."
+        }, status=status.HTTP_200_OK)
+
+
+class ConfirmResetPasswordAPI(APIView):
+    """
+    POST /api/usuarios/reset-password/confirm/
+    Paso 2: validar código y cambiar contraseña
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = ResetPasswordTokenSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        admin = serializer.validated_data["admin"]
+        new_password = serializer.validated_data["new_password"]
+
+        # Cambiar contraseña
+        admin.set_password(new_password)
+
+        # Invalidar token
+        admin.token_reset = None
+        admin.token_reset_expiry = None
+        admin.save()
+
+        return Response({
+            "mensaje": "Contraseña actualizada correctamente."
+        }, status=status.HTTP_200_OK)
