@@ -111,3 +111,8 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
 }
+
+#Settings para Brevo 
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+BREVO_SENDER_NAME = "Festival Gastronómico OTP"
+BREVO_SENDER_EMAIL = "festivalgastronomicopat@gmail.com"

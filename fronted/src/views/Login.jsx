@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, useGoogleLogin, googleLogout } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
+import { Link } from "react-router-dom";
 
 // ─── Tab Votante (Google) ────────────────────────────────────────────────────
 function TabVotante() {
@@ -147,6 +148,10 @@ function TabAdmin() {
                     autoComplete="current-password"
                 />
             </div>
+
+            <Link to="/ForgotPassword">
+                ¿Olvidaste tu contraseña?
+            </Link>
 
             <button type="submit" className="admin-btn" disabled={cargando}>
                 {cargando ? 'Iniciando sesión...' : 'Ingresar al panel'}
