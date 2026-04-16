@@ -1,8 +1,22 @@
-# Backend (EL ven es un entorno virtual)
+.[!TIP].
+En el momento que clonaron el repositorio: 
+
+Para backend Backend 
+
 cd backend
-python -m venv venv   
+
+Crear entorno virtual si no está creado
+python -m venv venv (crear)
+
+Para activar el entorno virtual:
+venv\Scripts\activate
+
+instalar requirements:
 pip install -r requirements.txt
 
-# Frontend
+agregar a requirements:
+pip freeze > requirements.txt
+
+Para frontend Frontend
 cd frontend
 npm install

@@ -26,8 +26,15 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'rest_framework',
+    'corsheaders',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'usuarioapp',
+    'festivalapp',
+    'restauranteapp',
+    'interaccionapp',
+    'resultadoapp',
     'corsheaders',  # Habilita la comunicación con React
 ]
 
@@ -79,4 +86,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 STATIC_URL = 'static/'
+# Google Auth Settings
+GOOGLE_CLIENT_ID = os.getenv("VITE_GOOGLE_CLIENT_ID") 
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "usuarioapp.authentication.AdminJWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+#Settings para Brevo 
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+BREVO_SENDER_NAME = "Festival Gastronómico OTP"
+BREVO_SENDER_EMAIL = "festivalgastronomicopat@gmail.com"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
