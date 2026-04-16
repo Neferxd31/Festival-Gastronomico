@@ -1,0 +1,315 @@
+/* --- Variables de Diseño --- */
+:root {
+    --primary: #ff6b35;
+    /* Naranja vibrante para comida */
+    --primary-hover: #f15a22;
+    --bg-gradient: radial-gradient(circle at top left, #2d1b0e 0%, #0f172a 100%);
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --input-bg: rgba(0, 0, 0, 0.25);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --error: #f87171;
+    --success: #4ade80;
+}
+
+/* --- Estructura Base --- */
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-gradient);
+    padding: 20px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 28px;
+    padding: 40px 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* --- Header y Logo --- */
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-logo {
+    width: 150px;
+    /* Tamaño controlado para evitar desbordamiento */
+    height: auto;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s ease;
+}
+
+.main-logo:hover {
+    transform: scale(1.05);
+}
+
+.login-header h1 {
+    color: var(--text-main);
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+
+.login-header h1 span {
+    display: block;
+    color: var(--primary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 4px;
+    margin-top: 5px;
+}
+
+/* --- Selector de Pestañas (Tabs) --- */
+.tabs-container {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tab-link {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-link.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.35);
+}
+
+/* --- Contenido de las Tabs --- */
+.tab-content,
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.description {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* --- Botón Google --- */
+.google-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px;
+    background: white;
+    border: none;
+    border-radius: 14px;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.google-btn:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.google-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+/* --- Formulario de Administrador --- */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px 18px;
+    background: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.15);
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.form-footer {
+    text-align: right;
+    margin-top: -8px;
+}
+
+#forgot-link {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+#forgot-link:hover {
+    color: var(--primary);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--primary), #f15a22);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px -5px rgba(241, 90, 34, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --- Mensajes de Error y Bienvenida --- */
+.error-badge {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--error);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    font-size: 0.85rem;
+    text-align: center;
+    animation: shake 0.4s ease-in-out;
+}
+
+.welcome-container {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.profile-badge img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    padding: 3px;
+    margin-bottom: 15px;
+}
+
+.logout-btn {
+    margin-top: 20px;
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    padding: 8px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* --- Animaciones --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* --- Loader sutil --- */
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 30px 20px;
+    }
+
+    .login-header h1 {
+        font-size: 1.3rem;
+    }
+}
