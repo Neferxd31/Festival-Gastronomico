@@ -50,7 +50,7 @@ export default function AdminPanel() {
                 <h1>🥘 Panel de Administrador</h1>
                 <div className="panel-user">
                     <span>{adminSession.usuario?.nombre}</span>
-                    <button onClick={() => { logoutAdmin(); navigate('/'); }} className="logout-btn">
+                    <button onClick={ async () => { await logoutAdmin(); navigate('/'); }} className="logout-btn">
                         Cerrar sesión
                     </button>
                 </div>

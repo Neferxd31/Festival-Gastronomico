@@ -168,3 +168,22 @@ class ConfirmResetPasswordAPI(APIView):
         return Response({
             "mensaje": "Contraseña actualizada correctamente."
         }, status=status.HTTP_200_OK)
+    
+class LogoutView(APIView):
+    """
+    POST /api/usuarios/logout/
+    Invalida la sesión del usuario (admin o votante).
+    El cliente debe enviar Authorization: Bearer <token> para admin,
+    o simplemente llamar al endpoint para limpiar la sesión de votante.
+    """
+    authentication_classes = [AdminJWTAuthentication]
+    permission_classes = []  # Permitir también votantes sin token
+
+    def post(self, request):
+        # Si viene con token de admin, lo recibimos pero el logout
+        # es stateless (JWT), así que solo confirmamos al cliente
+        # que puede eliminar el token de su lado.
+        return Response(
+            {"mensaje": "Sesión cerrada correctamente."},
+            status=status.HTTP_200_OK
+        )
