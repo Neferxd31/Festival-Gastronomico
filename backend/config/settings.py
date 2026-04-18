@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     'restauranteapp',
     'interaccionapp',
     'resultadoapp',
-    'corsheaders',  # Habilita la comunicación con React
 ]
 
 # 5. MIDDLEWARES (El orden es fundamental para CORS)
