@@ -45,6 +45,22 @@ function TabVotante() {
         onError: () => setError('Error al iniciar sesión con Google.'),
     });
 
+   const handleLogout = async () => {
+    try {
+        // Notificar al backend (para votante no hay token JWT, solo confirmamos)
+        await fetch('http://127.0.0.1:8000/api/usuarios/logout/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        });
+    } catch {
+        // Error de red — igual cerramos sesión local
+    }
+
+    googleLogout();                         // Desconecta la sesión de Google
+    localStorage.removeItem('user_session');
+    setUser(null);                          // Regresa a la pantalla de login (ya está en '/')
+};
+
     if (user) {
         return (
             <div className="welcome-container">
