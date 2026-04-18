@@ -16,9 +16,28 @@ export function AuthProvider({ children }) {
         setAdminSession(session);
     };
 
-    const logoutAdmin = () => {
+   const logoutAdmin = async () => {
+        const saved = localStorage.getItem('admin_session');
+        const token = saved ? JSON.parse(saved).token : null;
+
+        // Notificar al backend (best-effort: si falla, igual cerramos sesión)
+        try {
+            if (token) {
+                await fetch('http://127.0.0.1:8000/api/usuarios/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+            }
+        } catch {
+            // Error de red — igual limpiamos la sesión local
+        }
+
         localStorage.removeItem('admin_session');
         setAdminSession(null);
+        // La redirección la hace el componente que llama a logoutAdmin()
     };
 
     return (
