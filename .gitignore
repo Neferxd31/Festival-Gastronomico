@@ -33,15 +33,12 @@ static/
 .env.production
 .env.staging
 frontend/.env
-fronted/.env
 
 # ========================
 # Node / Frontend
 # ========================
 node_modules/
-fronted/node_modules/
 frontend/node_modules/
-fronted/dist/
 frontend/dist/
 dist/
 .npm/
