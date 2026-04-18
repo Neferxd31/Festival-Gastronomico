@@ -16,8 +16,12 @@ psycopg-binary==3.3.3
 pyasn1==0.6.3
 pyasn1_modules==0.4.2
 pycparser==3.0
+PyJWT==2.12.1
+python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 requests==2.33.1
+sib-api-v3-sdk==7.6.0
+six==1.17.0
 sqlparse==0.5.5
 tzdata==2025.3
 urllib3==2.6.3

@@ -1,12 +1,8 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from google.oauth2 import id_token
-from google.auth.transport import requests
-from django.db import connection, transaction 
+from django.db import connection, transaction
+import requests as http_requests
 import json
-import os
-
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '847544839508-fv07o4ss37vld92jd034qkta3so8bdde.apps.googleusercontent.com')
 
 @csrf_exempt
 def google_login(request):
@@ -15,12 +11,20 @@ def google_login(request):
         token = data.get('token')
 
         try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+            # Verificamos el access_token con Google y obtenemos info del usuario
+            response = http_requests.get(
+                'https://www.googleapis.com/oauth2/v3/userinfo',
+                headers={'Authorization': f'Bearer {token}'}
+            )
 
+            if response.status_code != 200:
+                return JsonResponse({'status': 'error', 'message': 'Token inválido'}, status=400)
+
+            idinfo = response.json()
             email = idinfo.get('email')
-            name = idinfo.get('name')
+            name = idinfo.get('name', '')
             foto_url = idinfo.get('picture', '')
-            google_id = idinfo.get('sub') 
+            google_id = idinfo.get('sub')
 
             with transaction.atomic():
                 with connection.cursor() as cursor:

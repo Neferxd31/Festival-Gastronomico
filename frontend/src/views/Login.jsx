@@ -3,15 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, useGoogleLogin, googleLogout } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { Link } from "react-router-dom";
-import './Login.css'; // Asegúrate de crear este archivo
+import './Login.css';
 
 function TabVotante() {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const saved = localStorage.getItem('user_session');
-        if (saved) setUser(JSON.parse(saved));
+        if (saved) {
+            setUser(JSON.parse(saved));
+            navigate('/');
+        }
     }, []);
 
     const handleSuccess = async (tokenResponse) => {
@@ -30,8 +34,9 @@ function TabVotante() {
             const data = await backendRes.json();
 
             if (data.status === 'success') {
-                localStorage.setItem('user_session', JSON.stringify(userInfo));
-                setUser(userInfo);
+                localStorage.setItem('user_session', JSON.stringify(data.user));
+                setUser(data.user);
+                navigate('/');
             } else {
                 setError('No se pudo iniciar sesión. Intenta de nuevo.');
             }
@@ -163,7 +168,7 @@ export default function Login() {
         <GoogleOAuthProvider clientId={clientId}>
             <div className="login-wrapper">
                 <div className="login-container">
-                    // Busca esta parte en tu Login.jsx y agrega la clase "main-logo"
+                    
                     <header className="login-header">
                         <img src="logo.webp" alt="Logo Festival" className="main-logo" />
                         <h1>Festival<span>Gastronómico</span></h1>
