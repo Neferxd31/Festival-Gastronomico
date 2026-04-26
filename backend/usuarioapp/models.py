@@ -7,6 +7,10 @@ class Usuario(models.Model):
     email = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Requerido por DRF para que IsAuthenticated funcione
+    # con modelos que no heredan de AbstractUser
+    is_authenticated = True
+
     class Meta:
         db_table = "usuario"
 

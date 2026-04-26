@@ -1,21 +1,136 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import './Home.css'
 
-const RESTAURANTES = [
-  'Metropizza', 'Mostaza', 'La 35 Burguer',
-  'Dulce Arcoiris', "Duke's Pizza", 'Circus Food',
-]
+// ── Modal de detalle ──────────────────────────────────────────────────────────
+function ModalDetalle({ restaurante, user, onVotar, onClose }) {
+  const redes = restaurante.redes_sociales || {}
 
+  // Cierra con Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  // Bloquea scroll del fondo mientras el modal está abierto
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+
+        <button className="modal-close" onClick={onClose}>✕</button>
+
+        {/* Imagen del plato como encabezado visual */}
+        {restaurante.plato?.imagen_url ? (
+          <img
+            src={restaurante.plato.imagen_url}
+            alt={restaurante.plato.nombre}
+            className="modal-hero-img"
+          />
+        ) : (
+          <div className="modal-hero-img modal-hero-img--vacio" />
+        )}
+
+        <div className="modal-body">
+
+          {/* INFO DEL RESTAURANTE */}
+          <h2 className="modal-nombre">{restaurante.nombre}</h2>
+          <p className="modal-desc">{restaurante.descripcion}</p>
+
+          <div className="modal-datos">
+            {restaurante.direccion && (
+              <div className="modal-dato">
+                <span className="modal-dato__icono">📍</span>
+                <span>{restaurante.direccion}</span>
+              </div>
+            )}
+            {restaurante.contacto && (
+              <div className="modal-dato">
+                <span className="modal-dato__icono">📞</span>
+                <span>{restaurante.contacto}</span>
+              </div>
+            )}
+          </div>
+
+          {/* REDES SOCIALES */}
+          {(redes.instagram || redes.facebook || redes.tiktok) && (
+            <div className="modal-redes">
+              {redes.instagram && (
+                <a href={`https://instagram.com/${redes.instagram.replace('@', '')}`} target="_blank" rel="noreferrer" className="modal-red modal-red--ig">
+                  Instagram
+                </a>
+              )}
+              {redes.facebook && (
+                <a href={redes.facebook.startsWith('http') ? redes.facebook : `https://facebook.com/${redes.facebook}`} target="_blank" rel="noreferrer" className="modal-red modal-red--fb">
+                  Facebook
+                </a>
+              )}
+              {redes.tiktok && (
+                <a href={`https://tiktok.com/${redes.tiktok.replace('@', '@')}`} target="_blank" rel="noreferrer" className="modal-red modal-red--tt">
+                  TikTok
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* VIDEO */}
+          {restaurante.video_url && (
+            <a href={restaurante.video_url} target="_blank" rel="noreferrer" className="modal-video-link">
+              ▶ Ver video del restaurante
+            </a>
+          )}
+
+          {/* PLATO ESTRELLA */}
+          {restaurante.plato && (
+            <div className="modal-plato">
+              <h3>🍽 Plato estrella</h3>
+              <p className="modal-plato__nombre">{restaurante.plato.nombre}</p>
+              {restaurante.plato.descripcion && (
+                <p className="modal-plato__desc">{restaurante.plato.descripcion}</p>
+              )}
+            </div>
+          )}
+
+          {/* BOTÓN DE VOTO */}
+          <button
+            className="modal-vote-btn"
+            onClick={() => { onVotar(restaurante); onClose() }}
+          >
+            {user ? `Votar por ${restaurante.nombre}` : 'Inicia sesión para votar'}
+          </button>
+
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Página principal ──────────────────────────────────────────────────────────
 export default function Home() {
-  const [busqueda, setBusqueda] = useState('')
-  const [user, setUser] = useState(null)
+  const [busqueda, setBusqueda]         = useState('')
+  const [user, setUser]                 = useState(null)
+  const [restaurantes, setRestaurantes] = useState([])
+  const [cargando, setCargando]         = useState(true)
+  const [seleccionado, setSeleccionado] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     const saved = localStorage.getItem('user_session')
     if (saved) setUser(JSON.parse(saved))
+  }, [])
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/restaurantes/')
+      .then(r => r.json())
+      .then(data => setRestaurantes(data))
+      .catch(() => {})
+      .finally(() => setCargando(false))
   }, [])
 
   const handleLogout = () => {
@@ -24,19 +139,20 @@ export default function Home() {
     setUser(null)
   }
 
-  const handleVotar = (restaurante) => {
+  const handleVotar = useCallback((restaurante) => {
     if (!user) {
-      // Guarda a dónde volver después del login
       localStorage.setItem('redirect_after_login', '/')
       navigate('/login')
     } else {
-      // Aquí irá la lógica de voto cuando esté lista
-      alert(`Voto registrado para ${restaurante}`)
+      // Lógica de voto — pendiente de implementar
+      alert(`Voto registrado para ${restaurante.nombre}`)
     }
-  }
+  }, [user, navigate])
 
-  const restaurantesFiltrados = RESTAURANTES.filter(r =>
-    r.toLowerCase().includes(busqueda.toLowerCase())
+  const cerrarModal = useCallback(() => setSeleccionado(null), [])
+
+  const filtrados = restaurantes.filter(r =>
+    r.nombre.toLowerCase().includes(busqueda.toLowerCase())
   )
 
   return (
@@ -87,11 +203,19 @@ export default function Home() {
       <section className="home-participantes" id="participantes">
         <h2>Participantes</h2>
 
-        <div className="home-participantes__tags">
-          {RESTAURANTES.map(r => (
-            <span key={r} className="home-tag">{r}</span>
-          ))}
-        </div>
+        {!cargando && restaurantes.length > 0 && (
+          <div className="home-participantes__tags">
+            {restaurantes.map(r => (
+              <span
+                key={r.id}
+                className="home-tag"
+                onClick={() => setSeleccionado(r)}
+              >
+                {r.nombre}
+              </span>
+            ))}
+          </div>
+        )}
 
         <input
           type="text"
@@ -101,23 +225,58 @@ export default function Home() {
           className="home-search"
         />
 
-        {/* TARJETAS DE RESTAURANTES */}
+        {/* TARJETAS */}
         <div className="home-cards">
-          {restaurantesFiltrados.map(r => (
-            <div key={r} className="home-card">
-              <div className="home-card__img" />
-              <h4>{r}</h4>
-              <p className="home-card__desc">Restaurante participante del festival.</p>
-              <button
-                className="home-card__vote"
-                onClick={() => handleVotar(r)}
+          {cargando ? (
+            <p className="home-empty">Cargando participantes...</p>
+          ) : filtrados.length === 0 ? (
+            <p className="home-empty">No hay participantes inscritos aún.</p>
+          ) : (
+            filtrados.map(r => (
+              <div
+                key={r.id}
+                className="home-card"
+                onClick={() => setSeleccionado(r)}
               >
-                {user ? 'Votar' : 'Inicia sesión para votar'}
-              </button>
-            </div>
-          ))}
+                {r.plato?.imagen_url ? (
+                  <img
+                    src={r.plato.imagen_url}
+                    alt={r.plato.nombre}
+                    className="home-card__img home-card__img--foto"
+                  />
+                ) : (
+                  <div className="home-card__img" />
+                )}
+                <h4>{r.nombre}</h4>
+                {r.plato?.nombre && (
+                  <span className="home-card__plato">🍽 {r.plato.nombre}</span>
+                )}
+                <p className="home-card__desc">
+                  {r.descripcion.length > 80
+                    ? r.descripcion.slice(0, 80) + '…'
+                    : r.descripcion}
+                </p>
+                <button
+                  className="home-card__info"
+                  onClick={e => { e.stopPropagation(); setSeleccionado(r) }}
+                >
+                  Ver más
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </section>
+
+      {/* MODAL */}
+      {seleccionado && (
+        <ModalDetalle
+          restaurante={seleccionado}
+          user={user}
+          onVotar={handleVotar}
+          onClose={cerrarModal}
+        />
+      )}
 
     </div>
   )
