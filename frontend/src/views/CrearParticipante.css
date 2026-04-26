@@ -1,0 +1,183 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.cp-wrapper {
+  background-color: #111;
+  min-height: 100vh;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  padding-bottom: 60px;
+}
+
+/* HEADER */
+.cp-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 48px;
+  background-color: #161616;
+  border-bottom: 1px solid #222;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.cp-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f5c518;
+}
+
+.cp-back {
+  background: none;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.cp-back:hover { border-color: #f5c518; color: #f5c518; }
+
+/* FORM */
+.cp-form {
+  max-width: 760px;
+  margin: 40px auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* SECCIÓN */
+.cp-section {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cp-section h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f5c518;
+  border-bottom: 1px solid #2a2a2a;
+  padding-bottom: 10px;
+}
+
+/* CAMPO */
+.cp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.cp-field label {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.cp-field input,
+.cp-field select,
+.cp-field textarea {
+  background-color: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+
+.cp-field input::placeholder,
+.cp-field textarea::placeholder { color: #555; }
+
+.cp-field input:focus,
+.cp-field select:focus,
+.cp-field textarea:focus { border-color: #f5c518; }
+
+.cp-field select option { background-color: #1a1a1a; }
+
+.cp-error {
+  font-size: 12px;
+  color: #e74c3c;
+}
+
+/* ROW (dos o tres columnas) */
+.cp-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.cp-row .cp-field { min-width: 180px; }
+
+/* PREVIEW IMAGEN */
+.cp-preview {
+  margin-top: 8px;
+}
+.cp-preview img {
+  max-width: 200px;
+  max-height: 140px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  object-fit: cover;
+}
+
+/* MENSAJE */
+.cp-mensaje {
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.cp-mensaje--exito { background-color: #1a3a2a; border: 1px solid #2ecc71; color: #2ecc71; }
+.cp-mensaje--error { background-color: #3a1a1a; border: 1px solid #e74c3c; color: #e74c3c; }
+
+/* ACCIONES */
+.cp-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cp-btn {
+  padding: 11px 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cp-btn--primario {
+  background-color: #f5c518;
+  color: #111;
+}
+.cp-btn--primario:hover:not(:disabled) { background-color: #e0b200; }
+.cp-btn--primario:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.cp-btn--secundario {
+  background-color: transparent;
+  border: 1px solid #444;
+  color: #ccc;
+}
+.cp-btn--secundario:hover { border-color: #f5c518; color: #f5c518; }
+
+/* LOADER */
+.cp-loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #111;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

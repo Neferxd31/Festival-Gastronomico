@@ -266,3 +266,223 @@
   transition: background 0.2s;
 }
 .home-card__vote:hover { background-color: #e0b200; }
+
+/* Botón "Ver más" en la tarjeta */
+.home-card__info {
+  width: 100%;
+  padding: 7px;
+  background-color: transparent;
+  color: #f5c518;
+  border: 1px solid #f5c518;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.home-card__info:hover {
+  background-color: #f5c518;
+  color: #111;
+}
+
+.home-card__img--foto {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.home-card__plato {
+  font-size: 12px;
+  color: #f5c518;
+  font-weight: 600;
+}
+
+.home-empty {
+  color: #555;
+  font-size: 14px;
+  padding: 40px 0;
+  width: 100%;
+  text-align: center;
+}
+
+/* Las tarjetas son clickeables */
+.home-card { cursor: pointer; }
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.modal-box {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0 }
+  to   { transform: translateY(0);    opacity: 1 }
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.15); }
+
+/* Imagen de cabecera */
+.modal-hero-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 16px 16px 0 0;
+  display: block;
+}
+.modal-hero-img--vacio {
+  background-color: #2a2a2a;
+}
+
+/* Cuerpo */
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-nombre {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.modal-desc {
+  font-size: 14px;
+  color: #aaa;
+  line-height: 1.6;
+}
+
+/* Datos (dirección, contacto) */
+.modal-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-dato {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.modal-dato__icono { font-size: 16px; }
+
+/* Redes sociales */
+.modal-redes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.modal-red {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.modal-red:hover { opacity: 0.8; }
+.modal-red--ig { background-color: #833ab4; color: #fff; }
+.modal-red--fb { background-color: #1877f2; color: #fff; }
+.modal-red--tt { background-color: #010101; color: #fff; border: 1px solid #333; }
+
+/* Link de video */
+.modal-video-link {
+  display: inline-block;
+  color: #f5c518;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.modal-video-link:hover { opacity: 0.8; }
+
+/* Plato estrella */
+.modal-plato {
+  background-color: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.modal-plato h3 {
+  font-size: 13px;
+  color: #f5c518;
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-plato__nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.modal-plato__desc {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* Botón de voto dentro del modal */
+.modal-vote-btn {
+  width: 100%;
+  padding: 13px;
+  background-color: #f5c518;
+  color: #111;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+.modal-vote-btn:hover { background-color: #e0b200; }

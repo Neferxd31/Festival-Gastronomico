@@ -7,4 +7,6 @@ urlpatterns = [
     path("api/google-login/",   google_login),
     path("api/update-cedula/",  update_cedula),
     path("api/usuarios/",       include("usuarioapp.urls")),
+    path("api/restaurantes/",   include("restauranteapp.urls")),
+    path("api/festivales/",     include("festivalapp.urls")),
 ]
