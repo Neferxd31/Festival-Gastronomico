@@ -306,8 +306,44 @@
   text-align: center;
 }
 
-/* Las tarjetas son clickeables */
-.home-card { cursor: pointer; }
+/* Las tarjetas son links */
+.home-card {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* "Ver información" como texto dentro de la tarjeta */
+.home-card__info {
+  font-size: 13px;
+  color: #f5c518;
+  font-weight: 600;
+}
+
+/* Botón "Ver todos los participantes" */
+.home-ver-todos {
+  margin-top: 40px;
+  text-align: center;
+}
+.home-ver-todos__btn {
+  display: inline-block;
+  padding: 12px 32px;
+  border: 1px solid #444;
+  border-radius: 24px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 14px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.home-ver-todos__btn:hover {
+  border-color: #f5c518;
+  color: #f5c518;
+}
+
+/* Los tags también son links */
+.home-tag {
+  text-decoration: none;
+}
 
 /* ── MODAL ───────────────────────────────────────────────── */
 .modal-overlay {
