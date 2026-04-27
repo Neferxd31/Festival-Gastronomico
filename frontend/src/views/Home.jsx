@@ -1,123 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import './Home.css'
 
-// ── Modal de detalle ──────────────────────────────────────────────────────────
-function ModalDetalle({ restaurante, user, onVotar, onClose }) {
-  const redes = restaurante.redes_sociales || {}
-
-  // Cierra con Escape
-  useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
-
-  // Bloquea scroll del fondo mientras el modal está abierto
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-
-        <button className="modal-close" onClick={onClose}>✕</button>
-
-        {/* Imagen del plato como encabezado visual */}
-        {restaurante.plato?.imagen_url ? (
-          <img
-            src={restaurante.plato.imagen_url}
-            alt={restaurante.plato.nombre}
-            className="modal-hero-img"
-          />
-        ) : (
-          <div className="modal-hero-img modal-hero-img--vacio" />
-        )}
-
-        <div className="modal-body">
-
-          {/* INFO DEL RESTAURANTE */}
-          <h2 className="modal-nombre">{restaurante.nombre}</h2>
-          <p className="modal-desc">{restaurante.descripcion}</p>
-
-          <div className="modal-datos">
-            {restaurante.direccion && (
-              <div className="modal-dato">
-                <span className="modal-dato__icono">📍</span>
-                <span>{restaurante.direccion}</span>
-              </div>
-            )}
-            {restaurante.contacto && (
-              <div className="modal-dato">
-                <span className="modal-dato__icono">📞</span>
-                <span>{restaurante.contacto}</span>
-              </div>
-            )}
-          </div>
-
-          {/* REDES SOCIALES */}
-          {(redes.instagram || redes.facebook || redes.tiktok) && (
-            <div className="modal-redes">
-              {redes.instagram && (
-                <a href={`https://instagram.com/${redes.instagram.replace('@', '')}`} target="_blank" rel="noreferrer" className="modal-red modal-red--ig">
-                  Instagram
-                </a>
-              )}
-              {redes.facebook && (
-                <a href={redes.facebook.startsWith('http') ? redes.facebook : `https://facebook.com/${redes.facebook}`} target="_blank" rel="noreferrer" className="modal-red modal-red--fb">
-                  Facebook
-                </a>
-              )}
-              {redes.tiktok && (
-                <a href={`https://tiktok.com/${redes.tiktok.replace('@', '@')}`} target="_blank" rel="noreferrer" className="modal-red modal-red--tt">
-                  TikTok
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* VIDEO */}
-          {restaurante.video_url && (
-            <a href={restaurante.video_url} target="_blank" rel="noreferrer" className="modal-video-link">
-              ▶ Ver video del restaurante
-            </a>
-          )}
-
-          {/* PLATO ESTRELLA */}
-          {restaurante.plato && (
-            <div className="modal-plato">
-              <h3>🍽 Plato estrella</h3>
-              <p className="modal-plato__nombre">{restaurante.plato.nombre}</p>
-              {restaurante.plato.descripcion && (
-                <p className="modal-plato__desc">{restaurante.plato.descripcion}</p>
-              )}
-            </div>
-          )}
-
-          {/* BOTÓN DE VOTO */}
-          <button
-            className="modal-vote-btn"
-            onClick={() => { onVotar(restaurante); onClose() }}
-          >
-            {user ? `Votar por ${restaurante.nombre}` : 'Inicia sesión para votar'}
-          </button>
-
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Página principal ──────────────────────────────────────────────────────────
 export default function Home() {
   const [busqueda, setBusqueda]         = useState('')
   const [user, setUser]                 = useState(null)
   const [restaurantes, setRestaurantes] = useState([])
   const [cargando, setCargando]         = useState(true)
-  const [seleccionado, setSeleccionado] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -128,7 +18,7 @@ export default function Home() {
   useEffect(() => {
     fetch('http://127.0.0.1:8000/api/restaurantes/')
       .then(r => r.json())
-      .then(data => setRestaurantes(data))
+      .then(setRestaurantes)
       .catch(() => {})
       .finally(() => setCargando(false))
   }, [])
@@ -138,18 +28,6 @@ export default function Home() {
     localStorage.removeItem('user_session')
     setUser(null)
   }
-
-  const handleVotar = useCallback((restaurante) => {
-    if (!user) {
-      localStorage.setItem('redirect_after_login', '/')
-      navigate('/login')
-    } else {
-      // Lógica de voto — pendiente de implementar
-      alert(`Voto registrado para ${restaurante.nombre}`)
-    }
-  }, [user, navigate])
-
-  const cerrarModal = useCallback(() => setSeleccionado(null), [])
 
   const filtrados = restaurantes.filter(r =>
     r.nombre.toLowerCase().includes(busqueda.toLowerCase())
@@ -163,7 +41,7 @@ export default function Home() {
         <span className="home-nav__brand">Festival Gastronómico</span>
         <div className="home-nav__links">
           <a href="#">Inicio</a>
-          <a href="#participantes">Participantes</a>
+          <Link to="/participantes">Participantes</Link>
           {user ? (
             <div className="home-nav__user">
               <img src={user.picture} alt="avatar" referrerPolicy="no-referrer" />
@@ -180,7 +58,7 @@ export default function Home() {
       <section className="home-hero">
         <h1>Sabor Local</h1>
         <p>El festival que reúne a los mejores restaurantes.</p>
-        <a href="#participantes" className="home-hero__btn">Ver Restaurantes</a>
+        <Link to="/participantes" className="home-hero__btn">Ver Restaurantes</Link>
       </section>
 
       {/* PASOS */}
@@ -199,20 +77,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PARTICIPANTES */}
+      {/* PARTICIPANTES — vista previa */}
       <section className="home-participantes" id="participantes">
         <h2>Participantes</h2>
 
         {!cargando && restaurantes.length > 0 && (
           <div className="home-participantes__tags">
             {restaurantes.map(r => (
-              <span
-                key={r.id}
-                className="home-tag"
-                onClick={() => setSeleccionado(r)}
-              >
+              <Link key={r.id} to={`/participantes/${r.id}`} className="home-tag">
                 {r.nombre}
-              </span>
+              </Link>
             ))}
           </div>
         )}
@@ -233,11 +107,7 @@ export default function Home() {
             <p className="home-empty">No hay participantes inscritos aún.</p>
           ) : (
             filtrados.map(r => (
-              <div
-                key={r.id}
-                className="home-card"
-                onClick={() => setSeleccionado(r)}
-              >
+              <Link key={r.id} to={`/participantes/${r.id}`} className="home-card">
                 {r.plato?.imagen_url ? (
                   <img
                     src={r.plato.imagen_url}
@@ -256,27 +126,18 @@ export default function Home() {
                     ? r.descripcion.slice(0, 80) + '…'
                     : r.descripcion}
                 </p>
-                <button
-                  className="home-card__info"
-                  onClick={e => { e.stopPropagation(); setSeleccionado(r) }}
-                >
-                  Ver más
-                </button>
-              </div>
+                <span className="home-card__info">Ver información →</span>
+              </Link>
             ))
           )}
         </div>
-      </section>
 
-      {/* MODAL */}
-      {seleccionado && (
-        <ModalDetalle
-          restaurante={seleccionado}
-          user={user}
-          onVotar={handleVotar}
-          onClose={cerrarModal}
-        />
-      )}
+        <div className="home-ver-todos">
+          <Link to="/participantes" className="home-ver-todos__btn">
+            Ver todos los participantes
+          </Link>
+        </div>
+      </section>
 
     </div>
   )

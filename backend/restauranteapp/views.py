@@ -71,6 +71,20 @@ def crear_restaurante(request):
 
 
 @api_view(['GET'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def detalle_restaurante(request, pk):
+    """Devuelve la información completa de un restaurante habilitado (público)."""
+    try:
+        restaurante = Restaurante.objects.select_related('plato').get(pk=pk, habilitado=True)
+    except Restaurante.DoesNotExist:
+        return Response({'detail': 'Restaurante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = RestauranteSerializer(restaurante)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
 @authentication_classes([AdminJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def listar_todos_restaurantes(request):
