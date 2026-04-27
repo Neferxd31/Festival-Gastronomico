@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
+import SuccessDeleteModal from '../components/modals/SuccessDeleteModal';
 
 function TablaParticipantes({ token }) {
     const { logoutAdmin } = useAuth();
@@ -9,6 +11,9 @@ function TablaParticipantes({ token }) {
     const [cargando, setCargando]         = useState(true);
     const [error, setError]               = useState(null);
     const [toggling, setToggling]         = useState(null); // id del que está cambiando
+    const [modalDelete, setModalDelete] = useState(false);
+    const [seleccionado, setSeleccionado] = useState(null);
+    const [modalDeleteSuccess, setModalDeleteSuccess] = useState(false);
 
     const cargar = useCallback(() => {
         setCargando(true);
@@ -43,6 +48,33 @@ function TablaParticipantes({ token }) {
         finally { setToggling(null); }
     };
 
+        const eliminarParticipante = async () => {
+        try {
+            const res = await fetch(
+              `http://127.0.0.1:8000/api/restaurantes/${seleccionado.id}/eliminar/`,
+              {
+                method: 'DELETE',
+                headers: {
+                  Authorization: `Bearer ${token}`
+                }
+              }
+            );
+
+            if (res.ok) {
+                setRestaurantes(prev =>
+                    prev.filter(x => x.id !== seleccionado.id)
+                );
+
+                setModalDelete(false);
+                setModalDeleteSuccess(true);
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    
     if (cargando) return <p className="panel-empty">Cargando participantes...</p>;
     if (error)    return <p className="login-error">{error}</p>;
     if (restaurantes.length === 0)
@@ -93,11 +125,32 @@ function TablaParticipantes({ token }) {
                                 >
                                     {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
                                 </button>
+                                <button
+                                    className="btn-delete"
+                                        onClick={() => {
+                                        setSeleccionado(r);
+                                            setModalDelete(true);
+                                        }}
+                            >
+                                Eliminar
+                                </button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+            <ConfirmDeleteModal
+  abierto={modalDelete}
+  participante={seleccionado}
+  onCancelar={() => setModalDelete(false)}
+  onConfirmar={eliminarParticipante}
+/>
+
+<SuccessDeleteModal
+  abierto={modalDeleteSuccess}
+  mensaje="El participante ha sido eliminado correctamente."
+  onCerrar={() => setModalDeleteSuccess(false)}
+/>
         </div>
     );
 }

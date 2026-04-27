@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import './CrearParticipante.css'
+import '../styles/CrearParticipante.css'
 
 const CAMPO_INICIAL = {
   festival_id:       '',

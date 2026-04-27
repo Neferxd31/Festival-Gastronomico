@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, useGoogleLogin, googleLogout } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { Link } from "react-router-dom";
-import './Login.css';
+import '../styles/Login.css';
 
 function TabVotante() {
     const [user, setUser] = useState(null);

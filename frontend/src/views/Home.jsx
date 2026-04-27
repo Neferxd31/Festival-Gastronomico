@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
-import './Home.css'
+import '../styles/Home.css'
 
 export default function Home() {
   const [busqueda, setBusqueda]         = useState('')

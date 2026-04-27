@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
-import './ParticipanteDetalle.css'
+import '../styles/ParticipanteDetalle.css'
 
 export default function ParticipanteDetalle() {
   const { id } = useParams()

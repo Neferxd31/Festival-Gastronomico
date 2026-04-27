@@ -107,3 +107,22 @@ def toggle_restaurante(request, pk):
     restaurante.habilitado = not restaurante.habilitado
     restaurante.save()
     return Response({'habilitado': restaurante.habilitado})
+
+#-------Eliminar restaurante -------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def eliminar_restaurante(request, pk):
+    try:
+        restaurante = Restaurante.objects.get(pk=pk)
+
+        nombre = restaurante.nombre
+        restaurante.delete()
+
+        return Response({
+            "mensaje": f'Participante "{nombre}" eliminado correctamente.'
+        }, status=200)
+
+    except Restaurante.DoesNotExist:
+        return Response({
+            "error": "Participante no encontrado."
+        }, status=404)
