@@ -1,3 +1,5 @@
+import '../../styles/ModalDelete.css';
+
 export default function SuccessDeleteModal({
   abierto,
   mensaje,

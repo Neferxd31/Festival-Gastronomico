@@ -1,3 +1,4 @@
+import '../../styles/ModalDelete.css';
 export default function ConfirmDeleteModal({
   abierto,
   participante,
@@ -13,7 +14,7 @@ export default function ConfirmDeleteModal({
 
         <p>
           ¿Seguro que deseas eliminar a
-          <strong> {participante?.nombre}</strong>?
+          <strong> {participante?.nombre}?</strong>  Esta  acción es <strong>irreversible</strong>
         </p>
 
         <div className="modal-actions">
