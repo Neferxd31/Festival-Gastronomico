@@ -148,7 +148,7 @@ function TablaParticipantes({ token }) {
 
 <SuccessDeleteModal
   abierto={modalDeleteSuccess}
-  mensaje="El participante ha sido eliminado correctamente."
+  mensaje="El participante fue enviado a la papelera."
   onCerrar={() => setModalDeleteSuccess(false)}
 />
         </div>
@@ -183,6 +183,9 @@ export default function AdminPanel() {
                 <div className="panel-acciones">
                     <Link to="/admin/crear-participante" className="panel-accion-btn">
                         + Crear participante
+                    </Link>
+                    <Link to="/admin/papelera" className="panel-accion-btn">
+                        Ver papelera
                     </Link>
                 </div>
 

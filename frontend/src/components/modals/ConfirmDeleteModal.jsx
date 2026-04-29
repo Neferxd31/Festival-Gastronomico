@@ -14,7 +14,7 @@ export default function ConfirmDeleteModal({
 
         <p>
           ¿Seguro que deseas eliminar a
-          <strong> {participante?.nombre}?</strong>  Esta  acción es <strong>irreversible</strong>
+          <strong> {participante?.nombre}?</strong>
         </p>
 
         <div className="modal-actions">

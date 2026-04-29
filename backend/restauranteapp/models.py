@@ -15,6 +15,8 @@ class Restaurante(models.Model):
     redes_sociales = models.JSONField(null=True, blank=True)
     video_url = models.TextField(null=True, blank=True)
     habilitado = models.BooleanField(default=True)
+    eliminado = models.BooleanField(default=False)
+    fecha_eliminacion = models.DateTimeField(null=True, blank=True)
 
     votos_total = models.IntegerField(default=0)
     comentarios_total = models.IntegerField(default=0)

@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
+from django.utils import timezone
 
 from usuarioapp.authentication import AdminJWTAuthentication
 from .models import Restaurante, Plato
@@ -15,7 +16,7 @@ from festivalapp.models import Festival
 @permission_classes([AllowAny])
 def listar_restaurantes(request):
     """Lista todos los restaurantes habilitados (público)."""
-    restaurantes = Restaurante.objects.filter(habilitado=True).select_related('plato')
+    restaurantes = Restaurante.objects.filter(habilitado=True, eliminado = False).select_related('plato')
     serializer = RestauranteSerializer(restaurantes, many=True)
     return Response(serializer.data)
 
@@ -76,7 +77,7 @@ def crear_restaurante(request):
 def detalle_restaurante(request, pk):
     """Devuelve la información completa de un restaurante habilitado (público)."""
     try:
-        restaurante = Restaurante.objects.select_related('plato').get(pk=pk, habilitado=True)
+        restaurante = Restaurante.objects.select_related('plato').get(pk=pk, habilitado=True, eliminado=False)
     except Restaurante.DoesNotExist:
         return Response({'detail': 'Restaurante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -103,6 +104,13 @@ def toggle_restaurante(request, pk):
         restaurante = Restaurante.objects.get(pk=pk)
     except Restaurante.DoesNotExist:
         return Response({'detail': 'Restaurante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if restaurante.eliminado:  #bloquea cambios si está eliminado
+        return Response(
+            {"error": "No se puede modificar un participante eliminado."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 
     restaurante.habilitado = not restaurante.habilitado
     restaurante.save()
@@ -110,19 +118,59 @@ def toggle_restaurante(request, pk):
 
 #-------Eliminar restaurante -------
 @api_view(['DELETE'])
+@authentication_classes([AdminJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def eliminar_restaurante(request, pk):
     try:
-        restaurante = Restaurante.objects.get(pk=pk)
+        restaurante = Restaurante.objects.get(pk=pk, eliminado=False)
 
-        nombre = restaurante.nombre
-        restaurante.delete()
+        restaurante.eliminado = True
+        restaurante.fecha_eliminacion = timezone.now()
+        restaurante.save()
 
         return Response({
-            "mensaje": f'Participante "{nombre}" eliminado correctamente.'
+            "mensaje": f'Participante "{restaurante.nombre}" enviado a papelera.'
         }, status=200)
 
     except Restaurante.DoesNotExist:
         return Response({
             "error": "Participante no encontrado."
+        }, status=404)
+
+    
+#----------Vista para la papelera de restaurantes -----------------#
+@api_view(['GET'])
+@authentication_classes([AdminJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def restaurantes_eliminados(request):
+
+    restaurantes = Restaurante.objects.filter(
+        eliminado=True
+    ).select_related('plato')
+
+    serializer = RestauranteSerializer(restaurantes, many=True)
+    return Response(serializer.data)
+
+#---------Vista para restaurar un restaurante eliminado -----------------#
+@api_view(['PATCH'])
+@authentication_classes([AdminJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def restaurar_restaurante(request, pk):
+    try:
+        restaurante = Restaurante.objects.get(
+            pk=pk,
+            eliminado=True
+        )
+
+        restaurante.eliminado = False
+        restaurante.fecha_eliminacion = None
+        restaurante.save()
+
+        return Response({
+            "mensaje": "Participante restaurado"
+        })
+
+    except Restaurante.DoesNotExist:
+        return Response({
+            "error": "No encontrado"
         }, status=404)

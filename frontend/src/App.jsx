@@ -7,6 +7,7 @@ import Home from './views/Home';
 import CrearParticipante from './views/CrearParticipante';
 import Participantes from './views/Participantes';
 import ParticipanteDetalle from './views/ParticipanteDetalle';
+import TrashPanel from './views/TrashPanel';
 import './App.css';
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
                     <Route path="/admin/panel"               element={<AdminPanel />} />
                     <Route path="/admin/crear-participante"  element={<CrearParticipante />} />
                     <Route path="/ForgotPassword"            element={<ForgotPassword />} />
+                    <Route path="/admin/papelera" element={<TrashPanel />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
