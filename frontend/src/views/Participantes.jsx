@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
-import './Participantes.css'
+import '../styles/Participantes.css'
 
 export default function Participantes() {
   const [restaurantes, setRestaurantes] = useState([])
