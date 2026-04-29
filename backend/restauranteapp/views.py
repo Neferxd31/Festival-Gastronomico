@@ -90,7 +90,9 @@ def detalle_restaurante(request, pk):
 @permission_classes([IsAuthenticated])
 def listar_todos_restaurantes(request):
     """Lista todos los restaurantes (habilitados y deshabilitados) para el admin."""
-    restaurantes = Restaurante.objects.all().select_related('plato')
+    restaurantes = Restaurante.objects.filter(
+        eliminado=False
+    ).select_related('plato')
     serializer = RestauranteSerializer(restaurantes, many=True)
     return Response(serializer.data)
 
