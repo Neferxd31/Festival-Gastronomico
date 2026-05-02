@@ -5,6 +5,7 @@ import AdminPanel from './views/AdminPanel';
 import ForgotPassword from './views/ForgotPassword';
 import Home from './views/Home';
 import CrearParticipante from './views/CrearParticipante';
+import  EditarParticipante from './views/EditarParticipante';
 import './App.css';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
                     <Route path="/admin/panel"             element={<AdminPanel />} />
                     <Route path="/admin/crear-participante" element={<CrearParticipante />} />
                     <Route path="/ForgotPassword"          element={<ForgotPassword />} />
+                    <Route path="/admin/editar-participante/:id" element={<EditarParticipante />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

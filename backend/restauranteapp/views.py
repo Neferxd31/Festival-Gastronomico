@@ -6,7 +6,7 @@ from django.db import transaction
 
 from usuarioapp.authentication import AdminJWTAuthentication
 from .models import Restaurante, Plato
-from .serializers import RestauranteSerializer, CrearRestauranteSerializer
+from .serializers import RestauranteSerializer, CrearRestauranteSerializer, EditarRestauranteSerializer
 from festivalapp.models import Festival
 
 
@@ -93,3 +93,74 @@ def toggle_restaurante(request, pk):
     restaurante.habilitado = not restaurante.habilitado
     restaurante.save()
     return Response({'habilitado': restaurante.habilitado})
+
+
+@api_view(['PUT'])
+@authentication_classes([AdminJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def editar_restaurante(request, pk):
+    """
+    PUT /api/restaurantes/<pk>/editar/
+    Edita un restaurante existente y su plato estrella (solo admin).
+    Todos los campos son opcionales; solo se actualizan los enviados.
+    """
+    # 1. Buscar el restaurante
+    try:
+        restaurante = Restaurante.objects.select_related('plato').get(pk=pk)
+    except Restaurante.DoesNotExist:
+        return Response(
+            {'detail': 'Restaurante no encontrado.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+ 
+    # 2. Validar los datos recibidos (partial=True → ningún campo es obligatorio)
+    serializer = EditarRestauranteSerializer(data=request.data, partial=True)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+ 
+    data = serializer.validated_data
+ 
+    with transaction.atomic():
+        # 3. Actualizar campos del restaurante solo si llegaron en el body
+        campos_restaurante = ['nombre', 'descripcion', 'direccion', 'contacto', 'video_url']
+        for campo in campos_restaurante:
+            if campo in data:
+                setattr(restaurante, campo, data[campo])
+ 
+        # 4. Fusionar redes sociales (no borra las que no se enviaron)
+        redes_actuales = restaurante.redes_sociales or {}
+        for red in ('instagram', 'facebook', 'tiktok'):
+            if red in data:
+                if data[red]:                        # si tiene valor → actualizar
+                    redes_actuales[red] = data[red]
+                else:                               # si llegó vacío → eliminar la clave
+                    redes_actuales.pop(red, None)
+        restaurante.redes_sociales = redes_actuales if redes_actuales else None
+ 
+        restaurante.save()
+ 
+        # 5. Actualizar el plato si se enviaron datos de él
+        campos_plato = {
+            'plato_nombre':       'nombre',
+            'plato_descripcion':  'descripcion',
+            'plato_imagen_url':   'imagen_url',
+        }
+        plato_data = {v: data[k] for k, v in campos_plato.items() if k in data}
+ 
+        if plato_data:
+            plato, _ = restaurante.__class__.objects.get_or_create(
+                pk=restaurante.pk
+            )  # el plato ya existe porque CrearParticipante lo crea siempre
+            try:
+                plato_obj = restaurante.plato
+                for attr, val in plato_data.items():
+                    setattr(plato_obj, attr, val)
+                plato_obj.save()
+            except Exception:
+                # Si por alguna razón no existía el plato, lo creamos
+                from .models import Plato
+                Plato.objects.create(restaurante=restaurante, **plato_data)
+ 
+    # 6. Devolver el restaurante actualizado
+    resultado = RestauranteSerializer(restaurante)
+    return Response(resultado.data, status=status.HTTP_200_OK)

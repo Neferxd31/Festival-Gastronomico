@@ -6,4 +6,5 @@ urlpatterns = [
     path('admin/',     views.listar_todos_restaurantes, name='restaurantes-admin'),
     path('crear/',     views.crear_restaurante,         name='restaurantes-crear'),
     path('<int:pk>/toggle/', views.toggle_restaurante,  name='restaurantes-toggle'),
+     path('<int:pk>/editar/',    views.editar_restaurante,        name='restaurantes-editar'),
 ]

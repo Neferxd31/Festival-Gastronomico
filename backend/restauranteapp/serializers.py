@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Restaurante, Plato
 
 
+
 class PlatoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plato
@@ -37,3 +38,21 @@ class CrearRestauranteSerializer(serializers.Serializer):
     plato_nombre      = serializers.CharField(max_length=150)
     plato_descripcion = serializers.CharField(required=False, allow_blank=True)
     plato_imagen_url  = serializers.URLField(required=False, allow_blank=True)
+
+
+class EditarRestauranteSerializer(serializers.Serializer):
+    # Campos del restaurante (todos opcionales)
+    nombre       = serializers.CharField(max_length=150,  required=False)
+    descripcion  = serializers.CharField(                  required=False)
+    direccion    = serializers.CharField(max_length=255,  required=False)
+    contacto     = serializers.CharField(max_length=100,  required=False, allow_blank=True)
+    video_url    = serializers.URLField(                   required=False, allow_blank=True)
+    instagram    = serializers.CharField(                  required=False, allow_blank=True)
+    facebook     = serializers.CharField(                  required=False, allow_blank=True)
+    tiktok       = serializers.CharField(                  required=False, allow_blank=True)
+ 
+    # Campos del plato (todos opcionales)
+    plato_nombre      = serializers.CharField(max_length=150, required=False)
+    plato_descripcion = serializers.CharField(                required=False, allow_blank=True)
+    plato_imagen_url  = serializers.URLField(                 required=False, allow_blank=True)
+ 

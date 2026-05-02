@@ -180,4 +180,11 @@
   animation: spin 0.7s linear infinite;
 }
 
+/* texto de area dinamicos a cantidad de texto */
+.cp-field textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 80px;
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
