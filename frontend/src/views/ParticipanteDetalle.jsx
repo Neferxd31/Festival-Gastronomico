@@ -3,6 +3,69 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import '../styles/ParticipanteDetalle.css'
 
+// Convierte URLs de YouTube/TikTok a embed, o muestra un <video> para enlaces directos
+function getYouTubeId(url) {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/)
+  return m ? m[1] : null
+}
+
+function VideoEmbed({ url }) {
+  const ytId = getYouTubeId(url)
+
+  if (ytId) {
+    return (
+      <div className="det-video-embed">
+        <iframe
+          src={`https://www.youtube.com/embed/${ytId}`}
+          title="Video del restaurante"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  // TikTok embed via blockquote (funciona sin SDK extra)
+  if (url.includes('tiktok.com')) {
+    return (
+      <div className="det-video-embed det-video-embed--tiktok">
+        <a href={url} target="_blank" rel="noreferrer" className="det-video-fallback">
+          <span className="det-video-fallback__icon">▶</span>
+          <div>
+            <strong>Ver video en TikTok</strong>
+            <small>Se abrirá en una nueva pestaña</small>
+          </div>
+        </a>
+      </div>
+    )
+  }
+
+  // Video directo (mp4, webm, etc.)
+  if (url.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
+    return (
+      <div className="det-video-embed">
+        <video controls preload="metadata">
+          <source src={url} />
+          Tu navegador no soporta video HTML5.
+        </video>
+      </div>
+    )
+  }
+
+  // Fallback: enlace externo
+  return (
+    <div className="det-video-embed">
+      <a href={url} target="_blank" rel="noreferrer" className="det-video-fallback">
+        <span className="det-video-fallback__icon">▶</span>
+        <div>
+          <strong>Ver video del restaurante</strong>
+          <small>Se abrirá en una nueva pestaña</small>
+        </div>
+      </a>
+    </div>
+  )
+}
+
 export default function ParticipanteDetalle() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -135,10 +198,7 @@ export default function ParticipanteDetalle() {
           {restaurante.video_url && (
             <section className="det-section">
               <h2>Video</h2>
-              <a href={restaurante.video_url} target="_blank" rel="noreferrer" className="det-video-link">
-                <span className="det-video-link__icon">▶</span>
-                Ver video del restaurante
-              </a>
+              <VideoEmbed url={restaurante.video_url} />
             </section>
           )}
 

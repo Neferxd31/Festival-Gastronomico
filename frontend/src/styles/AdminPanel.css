@@ -1,161 +1,317 @@
+/* ── ADMIN PANEL — LIGHT CARD LAYOUT ────────────────────────── */
+
 .panel-screen {
   min-height: 100vh;
-  background: #f9fafb;
-  color: #111;
+  background-color: #f5f5f7;
+  color: #1d1d1f;
   font-family: 'Segoe UI', sans-serif;
 }
 
 /* HEADER */
 .panel-header {
-  background: white;
-  border-bottom: 1px solid #eee;
-  padding: 20px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 18px 40px;
+  background-color: #fff;
+  border-bottom: 1px solid #e5e5e7;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.panel-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.panel-brand img {
-  width: 40px;
+.panel-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0;
 }
 
 .panel-user {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
 }
 
-/* LOGOUT */
+.panel-user span {
+  font-size: 13px;
+  color: #86868b;
+}
+
 .logout-btn {
-  background: #111;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
+  background: none;
+  border: 1px solid #d2d2d7;
+  color: #555;
+  padding: 7px 18px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
 }
-
 .logout-btn:hover {
-  background: #000;
+  border-color: #e74c3c;
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.06);
 }
 
 /* MAIN */
 .panel-main {
-  padding: 30px 40px;
+  padding: 0;
 }
 
-.panel-top {
+/* Bienvenida — oculta ya que el diseño no la necesita */
+.panel-main > h2,
+.panel-main > p:first-of-type {
+  display: none;
+}
+
+/* BARRA DE ACCIONES */
+.panel-acciones {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  gap: 10px;
+  padding: 20px 40px;
+  border-bottom: 1px solid #e5e5e7;
+  flex-wrap: wrap;
 }
 
-/* BOTONES */
-.btn-crear {
-  background: #22c55e;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
+.panel-accion-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 8px;
   text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  background-color: #f5c518;
+  color: #111;
+}
+.panel-accion-btn:hover {
+  background-color: #e0b200;
 }
 
-.btn-sec {
-  border: 1px solid #ccc;
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  color: #333;
+.panel-accion-btn:nth-child(2) {
+  background-color: #fff;
+  border: 1px solid #d2d2d7;
+  color: #86868b;
+}
+.panel-accion-btn:nth-child(2):hover {
+  border-color: #f5c518;
+  color: #b8860b;
 }
 
-/* GRID */
+/* MENSAJE EXITO */
+.panel-mensaje-exito {
+  margin: 16px 40px 0;
+  padding: 12px 20px;
+  background-color: #ecfdf5;
+  border: 1px solid #22c55e;
+  color: #16a34a;
+  border-radius: 10px;
+  font-size: 14px;
+  animation: panelFadeSlide 0.3s ease;
+}
+
+/* SECTION TITLE */
+.panel-section-title {
+  padding: 24px 40px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #86868b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* CONTENEDOR DE CARDS */
+.panel-tabla-wrap {
+  padding: 20px 40px 60px;
+}
+
+/* GRID DE CARDS */
 .panel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 
 /* CARD */
 .panel-card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: 0.2s;
+  background-color: #fff;
+  border: 1px solid #e5e5e7;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  animation: panelFadeSlide 0.35s ease both;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
-
 .panel-card:hover {
-  transform: translateY(-3px);
+  border-color: #ccc;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-/* IMG */
-.panel-card-img {
+/* Stagger animation */
+.panel-card:nth-child(1)  { animation-delay: 0.00s; }
+.panel-card:nth-child(2)  { animation-delay: 0.06s; }
+.panel-card:nth-child(3)  { animation-delay: 0.06s; }
+.panel-card:nth-child(4)  { animation-delay: 0.12s; }
+.panel-card:nth-child(5)  { animation-delay: 0.18s; }
+.panel-card:nth-child(6)  { animation-delay: 0.24s; }
+
+/* Imagen */
+.panel-card__img {
   width: 100%;
-  height: 140px;
+  height: 200px;
   object-fit: cover;
-  border-radius: 8px;
+  display: block;
+}
+.panel-card__img--empty {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, #f0f0f0, #e8e8e8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  font-size: 56px;
 }
 
-/* BADGE */
+/* Body */
+.panel-card__body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel-card__nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.panel-card__plato {
+  font-size: 13px;
+  color: #86868b;
+}
+
+/* Badge */
 .panel-badge {
   display: inline-block;
-  margin-top: 10px;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  width: fit-content;
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
+.panel-badge--on  { background-color: rgba(34, 197, 94, 0.12); color: #16a34a; }
+.panel-badge--off { background-color: rgba(231, 76, 60, 0.10); color: #dc2626; }
 
-.panel-badge.on {
-  background: #22c55e;
-  color: white;
-}
-
-.panel-badge.off {
-  background: #f59e0b;
-  color: white;
-}
-
-/* ACTIONS */
-.panel-actions {
-  margin-top: 12px;
+/* Acciones */
+.panel-card__actions {
   display: flex;
   gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid #f0f0f0;
 }
 
-/* TOGGLE */
-.btn-toggle {
-  padding: 6px 10px;
-  border: none;
+.panel-card__btn {
+  flex: 1;
+  padding: 8px 0;
   border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-}
-
-.btn-toggle.on {
-  background: #22c55e;
-  color: white;
-}
-
-.btn-toggle.off {
-  background: #f59e0b;
-  color: white;
-}
-
-/* DELETE */
-.btn-delete {
-  background: #ef4444;
-  color: white;
   border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.panel-card__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Toggle deshabilitar (amarillo) */
+.panel-card__btn--deshabilitar {
+  background-color: rgba(245, 197, 24, 0.12);
+  color: #b8860b;
+}
+.panel-card__btn--deshabilitar:hover:not(:disabled) {
+  background-color: rgba(245, 197, 24, 0.25);
 }
 
-.btn-delete:hover {
-  background: #dc2626;
+/* Toggle habilitar (verde) */
+.panel-card__btn--habilitar {
+  background-color: rgba(34, 197, 94, 0.10);
+  color: #16a34a;
+}
+.panel-card__btn--habilitar:hover:not(:disabled) {
+  background-color: rgba(34, 197, 94, 0.20);
+}
+
+/* Editar */
+.panel-card__btn--editar {
+  background-color: rgba(59, 130, 246, 0.10);
+  color: #2563eb;
+}
+.panel-card__btn--editar:hover:not(:disabled) {
+  background-color: rgba(59, 130, 246, 0.20);
+}
+
+/* Eliminar */
+.btn-delete,
+.panel-card__btn--eliminar {
+  background-color: rgba(231, 76, 60, 0.08);
+  color: #dc2626;
+  border: none;
+  padding: 8px 0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  transition: all 0.2s;
+}
+.btn-delete:hover,
+.panel-card__btn--eliminar:hover {
+  background-color: rgba(231, 76, 60, 0.18);
+}
+
+/* EMPTY & LOADING */
+.panel-empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #86868b;
+  font-size: 15px;
+}
+
+.login-error {
+  color: #dc2626;
+  text-align: center;
+  padding: 40px;
+}
+
+/* ANIMATIONS */
+@keyframes panelFadeSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .panel-header   { padding: 14px 20px; }
+  .panel-acciones { padding: 16px 20px; }
+  .panel-tabla-wrap { padding: 20px; }
+  .panel-grid     { grid-template-columns: 1fr; }
+  .panel-section-title { padding: 20px 20px 0; }
 }
