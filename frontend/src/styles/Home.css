@@ -522,3 +522,54 @@
   margin-top: 4px;
 }
 .modal-vote-btn:hover { background-color: #e0b200; }
+
+
+/* FESTIVAL */
+.home-festival {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #161616;
+}
+
+.home-festival h2 {
+  color: #f5c518;
+  margin-bottom: 16px;
+}
+
+.home-festival p {
+  max-width: 600px;
+  margin: 0 auto 20px;
+  color: #aaa;
+}
+
+.home-festival__btn {
+  border: 1px solid #f5c518;
+  color: #f5c518;
+  padding: 10px 20px;
+  border-radius: 20px;
+  text-decoration: none;
+}
+
+/* FOOTER */
+.home-footer {
+  text-align: center;
+  padding: 30px;
+  background-color: #0d0d0d;
+  color: #777;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .home-hero h1 {
+    font-size: 36px;
+  }
+
+  .home-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .home-card {
+    width: 90%;
+  }
+}

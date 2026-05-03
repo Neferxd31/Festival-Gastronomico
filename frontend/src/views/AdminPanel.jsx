@@ -9,6 +9,7 @@ import '../styles/panelacciones.css';
 function TablaParticipantes({ token }) {
     const { logoutAdmin } = useAuth();
     const navigate = useNavigate();
+
     const [restaurantes, setRestaurantes] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
@@ -29,7 +30,10 @@ function TablaParticipantes({ token }) {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(res => {
-                if (res.status === 401) { logoutAdmin(); navigate('/'); }
+                if (res.status === 401) {
+                    logoutAdmin();
+                    navigate('/');
+                }
                 return res.json();
             })
             .then(data => setRestaurantes(data))
@@ -60,6 +64,7 @@ function TablaParticipantes({ token }) {
                 method: 'PATCH',
                 headers: { Authorization: `Bearer ${token}` },
             });
+
             if (res.ok) {
                 const data = await res.json();
                 setRestaurantes(prev =>
@@ -93,7 +98,6 @@ function TablaParticipantes({ token }) {
                 setModalDelete(false);
                 setModalDeleteSuccess(true);
             }
-
         } catch (error) {
             console.log(error);
         }
@@ -219,33 +223,50 @@ export default function AdminPanel() {
 
     return (
         <div className="panel-screen">
+
             <header className="panel-header">
-                <h1>🥘 Panel de Administrador</h1>
+                <div className="panel-brand">
+                    <img src="/logo.webp" alt="logo" />
+                    <h1>Panel Admin</h1>
+                </div>
+
                 <div className="panel-user">
                     <span>{adminSession.usuario?.nombre}</span>
-                    <button onClick={async () => { await logoutAdmin(); navigate('/'); }} className="logout-btn">
+                    <button
+                        onClick={async () => {
+                            await logoutAdmin();
+                            navigate('/');
+                        }}
+                        className="logout-btn"
+                    >
                         Cerrar sesión
                     </button>
                 </div>
             </header>
-            <main className="panel-main">
-                <h2>Bienvenido, {adminSession.usuario?.nombre}</h2>
-                <p>{adminSession.usuario?.email}</p>
 
-                <div className="panel-acciones">
-                    <Link to="/admin/crear-participante" className="panel-accion-btn">
-                        + Crear participante
-                    </Link>
-                    <Link to="/admin/papelera" className="panel-accion-btn">
-                        Ver papelera
-                    </Link>
+            <main className="panel-main">
+
+                <div className="panel-top">
+                    <h2>Participantes</h2>
+
+                    <div className="panel-acciones">
+                        <Link to="/admin/crear-participante" className="btn-crear">
+                            + Crear
+                        </Link>
+                        <Link to="/admin/papelera" className="btn-sec">
+                            Papelera
+                        </Link>
+                    </div>
                 </div>
 
                 {mensajeExito && (
                     <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
                 )}
 
-                <h3 className="panel-section-title">Participantes registrados</h3>
+                {mensajeExito && (
+                    <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
+                )}
+
                 <TablaParticipantes token={adminSession.token} />
             </main>
         </div>
