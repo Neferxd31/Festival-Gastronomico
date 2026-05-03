@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import SuccessDeleteModal from '../components/modals/SuccessDeleteModal';
-import '../styles/AdminPanel.css';
+import ConfirmToggleModal from '../components/modals/ConfirmToggleModal';
+import '../styles/panelacciones.css';
 
 function TablaParticipantes({ token }) {
     const { logoutAdmin } = useAuth();
@@ -12,11 +13,16 @@ function TablaParticipantes({ token }) {
     const [restaurantes, setRestaurantes] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
-    const [toggling, setToggling] = useState(null);
+    const [toggling, setToggling] = useState(null); // id del que está cambiando
 
+    // Estados para modales de eliminación
     const [modalDelete, setModalDelete] = useState(false);
     const [seleccionado, setSeleccionado] = useState(null);
     const [modalDeleteSuccess, setModalDeleteSuccess] = useState(false);
+
+    // Estados para el nuevo modal de toggle (habilitar/deshabilitar)
+    const [modalToggle, setModalToggle] = useState(false);
+    const [restauranteToggle, setRestauranteToggle] = useState(null);
 
     const cargar = useCallback(() => {
         setCargando(true);
@@ -37,8 +43,22 @@ function TablaParticipantes({ token }) {
 
     useEffect(() => { cargar(); }, [cargar]);
 
-    const handleToggle = async (id) => {
+    // Función para abrir el modal
+    const abrirModalToggle = (restaurante) => {
+        setRestauranteToggle(restaurante);
+        setModalToggle(true);
+    };
+
+    // Función que se ejecuta cuando el administrador confirma en el modal
+    const ejecutarToggle = async () => {
+        if (!restauranteToggle) return;
+
+        const id = restauranteToggle.id;
+
+        // Cerramos el modal inmediatamente y mostramos estado de carga en el botón
+        setModalToggle(false);
         setToggling(id);
+
         try {
             const res = await fetch(`http://127.0.0.1:8000/api/restaurantes/${id}/toggle/`, {
                 method: 'PATCH',
@@ -51,8 +71,10 @@ function TablaParticipantes({ token }) {
                     prev.map(r => r.id === id ? { ...r, habilitado: data.habilitado } : r)
                 );
             }
-        } finally {
+        } catch { /* silencioso */ }
+        finally {
             setToggling(null);
+            setRestauranteToggle(null); // Limpiamos el estado
         }
     };
 
@@ -62,7 +84,9 @@ function TablaParticipantes({ token }) {
                 `http://127.0.0.1:8000/api/restaurantes/${seleccionado.id}/eliminar/`,
                 {
                     method: 'DELETE',
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
 
@@ -79,46 +103,87 @@ function TablaParticipantes({ token }) {
         }
     };
 
-    if (cargando) return <p className="panel-empty">Cargando...</p>;
-    if (error) return <p className="panel-error">{error}</p>;
+    if (cargando) return <p className="panel-empty">Cargando participantes...</p>;
+    if (error) return <p className="login-error">{error}</p>;
+    if (restaurantes.length === 0)
+        return <p className="panel-empty">Aún no hay participantes registrados.</p>;
 
     return (
-        <div className="panel-grid">
-            {restaurantes.map(r => (
-                <div key={r.id} className="panel-card">
+        <div className="panel-tabla-wrap">
+            <table className="panel-tabla">
+                <thead>
+                    <tr>
+                        <th>Restaurante</th>
+                        <th>Plato estrella</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {restaurantes.map(r => (
+                        <tr key={r.id}>
+                            <td>
+                                <strong>{r.nombre}</strong>
+                                {r.descripcion && (
+                                    <small>{r.descripcion.slice(0, 60)}{r.descripcion.length > 60 ? '…' : ''}</small>
+                                )}
+                            </td>
+                            <td>
+                                {r.plato ? (
+                                    <span className="panel-plato">
+                                        {r.plato.imagen_url && (
+                                            <img src={r.plato.imagen_url} alt={r.plato.nombre} />
+                                        )}
+                                        {r.plato.nombre}
+                                    </span>
+                                ) : '—'}
+                            </td>
+                            <td>{r.direccion}</td>
+                            <td>
+                                <span className={`panel-badge ${r.habilitado ? 'panel-badge--on' : 'panel-badge--off'}`}>
+                                    {r.habilitado ? 'Habilitado' : 'Deshabilitado'}
+                                </span>
+                            </td>
+                            <td className="panel-acciones-td">
+                                <button
+                                    className={`panel-toggle ${r.habilitado ? 'panel-toggle--off' : 'panel-toggle--on'}`}
+                                    onClick={() => abrirModalToggle(r)}
+                                    disabled={toggling === r.id}
+                                >
+                                    {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
+                                </button>
+                                <button
+                                    className="panel-toggle panel-toggle--edit"
+                                    onClick={() => navigate(`/admin/editar-participante/${r.id}`, { state: { restaurante: r } })}
+                                >
+                                    Editar
+                                </button>
+                                <button
+                                    className="btn-delete"
+                                    onClick={() => {
+                                        setSeleccionado(r);
+                                        setModalDelete(true);
+                                    }}
+                                >
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
 
-                    {r.plato?.imagen_url && (
-                        <img src={r.plato.imagen_url} className="panel-card-img" />
-                    )}
-
-                    <h3>{r.nombre}</h3>
-                    <p>{r.descripcion}</p>
-
-                    <span className={`panel-badge ${r.habilitado ? 'on' : 'off'}`}>
-                        {r.habilitado ? 'Habilitado' : 'Deshabilitado'}
-                    </span>
-
-                    <div className="panel-actions">
-                        <button
-                            className={`btn-toggle ${r.habilitado ? 'off' : 'on'}`}
-                            onClick={() => handleToggle(r.id)}
-                            disabled={toggling === r.id}
-                        >
-                            {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
-                        </button>
-
-                        <button
-                            className="btn-delete"
-                            onClick={() => {
-                                setSeleccionado(r);
-                                setModalDelete(true);
-                            }}
-                        >
-                            Eliminar
-                        </button>
-                    </div>
-                </div>
-            ))}
+            {/* Modal de confirmación para habilitar/deshabilitar */}
+            <ConfirmToggleModal
+                abierto={modalToggle}
+                participante={restauranteToggle}
+                onCancelar={() => {
+                    setModalToggle(false);
+                    setRestauranteToggle(null);
+                }}
+                onConfirmar={ejecutarToggle}
+            />
 
             <ConfirmDeleteModal
                 abierto={modalDelete}
@@ -129,7 +194,7 @@ function TablaParticipantes({ token }) {
 
             <SuccessDeleteModal
                 abierto={modalDeleteSuccess}
-                mensaje="El participante fue eliminado."
+                mensaje="El participante fue enviado a la papelera."
                 onCerrar={() => setModalDeleteSuccess(false)}
             />
         </div>
@@ -139,10 +204,20 @@ function TablaParticipantes({ token }) {
 export default function AdminPanel() {
     const { adminSession, logoutAdmin } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [mensajeExito, setMensajeExito] = useState(null);
 
     useEffect(() => {
         if (!adminSession) navigate('/');
     }, [adminSession, navigate]);
+
+    useEffect(() => {
+        if (location.state?.mensajeExito) {
+            setMensajeExito(location.state.mensajeExito);
+            window.history.replaceState({}, '');
+            setTimeout(() => setMensajeExito(null), 4000);
+        }
+    }, [location.state]);
 
     if (!adminSession) return null;
 
@@ -183,6 +258,14 @@ export default function AdminPanel() {
                         </Link>
                     </div>
                 </div>
+
+                {mensajeExito && (
+                    <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
+                )}
+
+                {mensajeExito && (
+                    <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
+                )}
 
                 <TablaParticipantes token={adminSession.token} />
             </main>

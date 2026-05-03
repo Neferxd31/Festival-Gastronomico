@@ -10,5 +10,5 @@ urlpatterns = [
     path('<int:pk>/eliminar/', views.eliminar_restaurante, name='restaurantes-eliminar'),
     path('eliminados/', views.restaurantes_eliminados, name='restaurantes-eliminados'),
     path('<int:pk>/restaurar/', views.restaurar_restaurante, name='restaurar-restaurante'),
-
+    path('<int:pk>/editar/',    views.editar_restaurante,    name='restaurantes-editar'),
 ]
