@@ -3,17 +3,24 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import SuccessDeleteModal from '../components/modals/SuccessDeleteModal';
+import ConfirmToggleModal from '../components/modals/ConfirmToggleModal'; // <-- Importamos el nuevo modal
 
 function TablaParticipantes({ token }) {
     const { logoutAdmin } = useAuth();
     const navigate = useNavigate();
     const [restaurantes, setRestaurantes] = useState([]);
-    const [cargando, setCargando]         = useState(true);
-    const [error, setError]               = useState(null);
-    const [toggling, setToggling]         = useState(null); // id del que está cambiando
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState(null);
+    const [toggling, setToggling] = useState(null); // id del que está cambiando
+
+    // Estados para modales de eliminación
     const [modalDelete, setModalDelete] = useState(false);
     const [seleccionado, setSeleccionado] = useState(null);
     const [modalDeleteSuccess, setModalDeleteSuccess] = useState(false);
+
+    // Estados para el nuevo modal de toggle (habilitar/deshabilitar)
+    const [modalToggle, setModalToggle] = useState(false);
+    const [restauranteToggle, setRestauranteToggle] = useState(null);
 
     const cargar = useCallback(() => {
         setCargando(true);
@@ -27,12 +34,26 @@ function TablaParticipantes({ token }) {
             .then(data => setRestaurantes(data))
             .catch(() => setError('No se pudieron cargar los participantes.'))
             .finally(() => setCargando(false));
-    }, [token]);
+    }, [token, logoutAdmin, navigate]);
 
     useEffect(() => { cargar(); }, [cargar]);
 
-    const handleToggle = async (id) => {
+    // Función para abrir el modal
+    const abrirModalToggle = (restaurante) => {
+        setRestauranteToggle(restaurante);
+        setModalToggle(true);
+    };
+
+    // Función que se ejecuta cuando el administrador confirma en el modal
+    const ejecutarToggle = async () => {
+        if (!restauranteToggle) return;
+
+        const id = restauranteToggle.id;
+
+        // Cerramos el modal inmediatamente y mostramos estado de carga en el botón
+        setModalToggle(false);
         setToggling(id);
+
         try {
             const res = await fetch(`http://127.0.0.1:8000/api/restaurantes/${id}/toggle/`, {
                 method: 'PATCH',
@@ -45,19 +66,22 @@ function TablaParticipantes({ token }) {
                 );
             }
         } catch { /* silencioso */ }
-        finally { setToggling(null); }
+        finally {
+            setToggling(null);
+            setRestauranteToggle(null); // Limpiamos el estado
+        }
     };
 
-        const eliminarParticipante = async () => {
+    const eliminarParticipante = async () => {
         try {
             const res = await fetch(
-              `http://127.0.0.1:8000/api/restaurantes/${seleccionado.id}/eliminar/`,
-              {
-                method: 'DELETE',
-                headers: {
-                  Authorization: `Bearer ${token}`
+                `http://127.0.0.1:8000/api/restaurantes/${seleccionado.id}/eliminar/`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-              }
             );
 
             if (res.ok) {
@@ -74,9 +98,8 @@ function TablaParticipantes({ token }) {
         }
     };
 
-    
     if (cargando) return <p className="panel-empty">Cargando participantes...</p>;
-    if (error)    return <p className="login-error">{error}</p>;
+    if (error) return <p className="login-error">{error}</p>;
     if (restaurantes.length === 0)
         return <p className="panel-empty">Aún no hay participantes registrados.</p>;
 
@@ -120,37 +143,49 @@ function TablaParticipantes({ token }) {
                             <td>
                                 <button
                                     className={`panel-toggle ${r.habilitado ? 'panel-toggle--off' : 'panel-toggle--on'}`}
-                                    onClick={() => handleToggle(r.id)}
+                                    onClick={() => abrirModalToggle(r)} // <-- Ahora abre el modal y pasa el objeto completo
                                     disabled={toggling === r.id}
                                 >
                                     {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
                                 </button>
                                 <button
                                     className="btn-delete"
-                                        onClick={() => {
+                                    onClick={() => {
                                         setSeleccionado(r);
-                                            setModalDelete(true);
-                                        }}
-                            >
-                                Eliminar
+                                        setModalDelete(true);
+                                    }}
+                                >
+                                    Eliminar
                                 </button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <ConfirmDeleteModal
-  abierto={modalDelete}
-  participante={seleccionado}
-  onCancelar={() => setModalDelete(false)}
-  onConfirmar={eliminarParticipante}
-/>
 
-<SuccessDeleteModal
-  abierto={modalDeleteSuccess}
-  mensaje="El participante fue enviado a la papelera."
-  onCerrar={() => setModalDeleteSuccess(false)}
-/>
+            {/* Modal de confirmación para habilitar/deshabilitar */}
+            <ConfirmToggleModal
+                abierto={modalToggle}
+                participante={restauranteToggle}
+                onCancelar={() => {
+                    setModalToggle(false);
+                    setRestauranteToggle(null);
+                }}
+                onConfirmar={ejecutarToggle}
+            />
+
+            <ConfirmDeleteModal
+                abierto={modalDelete}
+                participante={seleccionado}
+                onCancelar={() => setModalDelete(false)}
+                onConfirmar={eliminarParticipante}
+            />
+
+            <SuccessDeleteModal
+                abierto={modalDeleteSuccess}
+                mensaje="El participante fue enviado a la papelera."
+                onCerrar={() => setModalDeleteSuccess(false)}
+            />
         </div>
     );
 }
