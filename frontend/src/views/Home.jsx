@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import '../styles/Home.css'
 
 export default function Home() {
-  const [busqueda, setBusqueda]         = useState('')
-  const [user, setUser]                 = useState(null)
+  const [busqueda, setBusqueda] = useState('')
+  const [user, setUser] = useState(null)
   const [restaurantes, setRestaurantes] = useState([])
-  const [cargando, setCargando]         = useState(true)
-  const navigate = useNavigate()
+  const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
     const saved = localStorage.getItem('user_session')
@@ -40,11 +39,11 @@ export default function Home() {
       <nav className="home-nav">
         <span className="home-nav__brand">Festival Gastronómico</span>
         <div className="home-nav__links">
-          <a href="#">Inicio</a>
+          <Link to="/">Inicio</Link>
           <Link to="/participantes">Participantes</Link>
           {user ? (
             <div className="home-nav__user">
-              <img src={user.picture} alt="avatar" referrerPolicy="no-referrer" />
+              <img src={user.picture} alt="avatar" />
               <span>{user.name?.split(' ')[0]}</span>
               <button onClick={handleLogout} className="home-nav__logout">Salir</button>
             </div>
@@ -57,8 +56,26 @@ export default function Home() {
       {/* HERO */}
       <section className="home-hero">
         <h1>Sabor Local</h1>
-        <p>El festival que reúne a los mejores restaurantes.</p>
-        <Link to="/participantes" className="home-hero__btn">Ver Restaurantes</Link>
+        <p>
+          Descubre los mejores sabores locales, explora restaurantes y vota
+          por tu plato favorito.
+        </p>
+        <Link to="/participantes" className="home-hero__btn">
+          Saber más
+        </Link>
+      </section>
+
+      {/* INFO DEL FESTIVAL */}
+      <section className="home-festival">
+        <h2>Sobre el Festival</h2>
+        <p>
+          El Festival Gastronómico reúne a los mejores restaurantes de la región,
+          promoviendo la cultura culinaria y brindando una experiencia única a todos
+          los asistentes.
+        </p>
+        <Link to="/participantes" className="home-festival__btn">
+          Conoce más
+        </Link>
       </section>
 
       {/* PASOS */}
@@ -77,19 +94,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PARTICIPANTES — vista previa */}
-      <section className="home-participantes" id="participantes">
+      {/* PARTICIPANTES */}
+      <section className="home-participantes">
         <h2>Participantes</h2>
-
-        {!cargando && restaurantes.length > 0 && (
-          <div className="home-participantes__tags">
-            {restaurantes.map(r => (
-              <Link key={r.id} to={`/participantes/${r.id}`} className="home-tag">
-                {r.nombre}
-              </Link>
-            ))}
-          </div>
-        )}
 
         <input
           type="text"
@@ -99,34 +106,33 @@ export default function Home() {
           className="home-search"
         />
 
-        {/* TARJETAS */}
         <div className="home-cards">
           {cargando ? (
-            <p className="home-empty">Cargando participantes...</p>
+            <p className="home-empty">Cargando...</p>
           ) : filtrados.length === 0 ? (
-            <p className="home-empty">No hay participantes inscritos aún.</p>
+            <p className="home-empty">No hay participantes.</p>
           ) : (
             filtrados.map(r => (
               <Link key={r.id} to={`/participantes/${r.id}`} className="home-card">
+
                 {r.plato?.imagen_url ? (
-                  <img
-                    src={r.plato.imagen_url}
-                    alt={r.plato.nombre}
-                    className="home-card__img home-card__img--foto"
-                  />
+                  <img src={r.plato.imagen_url} className="home-card__img--foto" />
                 ) : (
                   <div className="home-card__img" />
                 )}
+
                 <h4>{r.nombre}</h4>
+
                 {r.plato?.nombre && (
                   <span className="home-card__plato">🍽 {r.plato.nombre}</span>
                 )}
+
                 <p className="home-card__desc">
-                  {r.descripcion.length > 80
-                    ? r.descripcion.slice(0, 80) + '…'
-                    : r.descripcion}
+                  {r.descripcion?.slice(0, 80)}...
                 </p>
+
                 <span className="home-card__info">Ver información →</span>
+
               </Link>
             ))
           )}
@@ -134,10 +140,16 @@ export default function Home() {
 
         <div className="home-ver-todos">
           <Link to="/participantes" className="home-ver-todos__btn">
-            Ver todos los participantes
+            Ver todos
           </Link>
         </div>
       </section>
+
+      {/* FOOTER */}
+      <footer className="home-footer">
+        <p>© 2026 Festival Gastronómico</p>
+        <p>Apoya lo local 🍽️</p>
+      </footer>
 
     </div>
   )

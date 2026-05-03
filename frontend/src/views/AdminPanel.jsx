@@ -3,14 +3,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import SuccessDeleteModal from '../components/modals/SuccessDeleteModal';
+import '../styles/AdminPanel.css';
 
 function TablaParticipantes({ token }) {
     const { logoutAdmin } = useAuth();
     const navigate = useNavigate();
+
     const [restaurantes, setRestaurantes] = useState([]);
-    const [cargando, setCargando]         = useState(true);
-    const [error, setError]               = useState(null);
-    const [toggling, setToggling]         = useState(null); // id del que está cambiando
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState(null);
+    const [toggling, setToggling] = useState(null);
+
     const [modalDelete, setModalDelete] = useState(false);
     const [seleccionado, setSeleccionado] = useState(null);
     const [modalDeleteSuccess, setModalDeleteSuccess] = useState(false);
@@ -21,13 +24,16 @@ function TablaParticipantes({ token }) {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(res => {
-                if (res.status === 401) { logoutAdmin(); navigate('/'); }
+                if (res.status === 401) {
+                    logoutAdmin();
+                    navigate('/');
+                }
                 return res.json();
             })
             .then(data => setRestaurantes(data))
             .catch(() => setError('No se pudieron cargar los participantes.'))
             .finally(() => setCargando(false));
-    }, [token]);
+    }, [token, logoutAdmin, navigate]);
 
     useEffect(() => { cargar(); }, [cargar]);
 
@@ -38,26 +44,26 @@ function TablaParticipantes({ token }) {
                 method: 'PATCH',
                 headers: { Authorization: `Bearer ${token}` },
             });
+
             if (res.ok) {
                 const data = await res.json();
                 setRestaurantes(prev =>
                     prev.map(r => r.id === id ? { ...r, habilitado: data.habilitado } : r)
                 );
             }
-        } catch { /* silencioso */ }
-        finally { setToggling(null); }
+        } finally {
+            setToggling(null);
+        }
     };
 
-        const eliminarParticipante = async () => {
+    const eliminarParticipante = async () => {
         try {
             const res = await fetch(
-              `http://127.0.0.1:8000/api/restaurantes/${seleccionado.id}/eliminar/`,
-              {
-                method: 'DELETE',
-                headers: {
-                  Authorization: `Bearer ${token}`
+                `http://127.0.0.1:8000/api/restaurantes/${seleccionado.id}/eliminar/`,
+                {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${token}` }
                 }
-              }
             );
 
             if (res.ok) {
@@ -68,89 +74,64 @@ function TablaParticipantes({ token }) {
                 setModalDelete(false);
                 setModalDeleteSuccess(true);
             }
-
         } catch (error) {
             console.log(error);
         }
     };
 
-    
-    if (cargando) return <p className="panel-empty">Cargando participantes...</p>;
-    if (error)    return <p className="login-error">{error}</p>;
-    if (restaurantes.length === 0)
-        return <p className="panel-empty">Aún no hay participantes registrados.</p>;
+    if (cargando) return <p className="panel-empty">Cargando...</p>;
+    if (error) return <p className="panel-error">{error}</p>;
 
     return (
-        <div className="panel-tabla-wrap">
-            <table className="panel-tabla">
-                <thead>
-                    <tr>
-                        <th>Restaurante</th>
-                        <th>Plato estrella</th>
-                        <th>Dirección</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {restaurantes.map(r => (
-                        <tr key={r.id}>
-                            <td>
-                                <strong>{r.nombre}</strong>
-                                {r.descripcion && (
-                                    <small>{r.descripcion.slice(0, 60)}{r.descripcion.length > 60 ? '…' : ''}</small>
-                                )}
-                            </td>
-                            <td>
-                                {r.plato ? (
-                                    <span className="panel-plato">
-                                        {r.plato.imagen_url && (
-                                            <img src={r.plato.imagen_url} alt={r.plato.nombre} />
-                                        )}
-                                        {r.plato.nombre}
-                                    </span>
-                                ) : '—'}
-                            </td>
-                            <td>{r.direccion}</td>
-                            <td>
-                                <span className={`panel-badge ${r.habilitado ? 'panel-badge--on' : 'panel-badge--off'}`}>
-                                    {r.habilitado ? 'Habilitado' : 'Deshabilitado'}
-                                </span>
-                            </td>
-                            <td>
-                                <button
-                                    className={`panel-toggle ${r.habilitado ? 'panel-toggle--off' : 'panel-toggle--on'}`}
-                                    onClick={() => handleToggle(r.id)}
-                                    disabled={toggling === r.id}
-                                >
-                                    {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
-                                </button>
-                                <button
-                                    className="btn-delete"
-                                        onClick={() => {
-                                        setSeleccionado(r);
-                                            setModalDelete(true);
-                                        }}
-                            >
-                                Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <ConfirmDeleteModal
-  abierto={modalDelete}
-  participante={seleccionado}
-  onCancelar={() => setModalDelete(false)}
-  onConfirmar={eliminarParticipante}
-/>
+        <div className="panel-grid">
+            {restaurantes.map(r => (
+                <div key={r.id} className="panel-card">
 
-<SuccessDeleteModal
-  abierto={modalDeleteSuccess}
-  mensaje="El participante fue enviado a la papelera."
-  onCerrar={() => setModalDeleteSuccess(false)}
-/>
+                    {r.plato?.imagen_url && (
+                        <img src={r.plato.imagen_url} className="panel-card-img" />
+                    )}
+
+                    <h3>{r.nombre}</h3>
+                    <p>{r.descripcion}</p>
+
+                    <span className={`panel-badge ${r.habilitado ? 'on' : 'off'}`}>
+                        {r.habilitado ? 'Habilitado' : 'Deshabilitado'}
+                    </span>
+
+                    <div className="panel-actions">
+                        <button
+                            className={`btn-toggle ${r.habilitado ? 'off' : 'on'}`}
+                            onClick={() => handleToggle(r.id)}
+                            disabled={toggling === r.id}
+                        >
+                            {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
+                        </button>
+
+                        <button
+                            className="btn-delete"
+                            onClick={() => {
+                                setSeleccionado(r);
+                                setModalDelete(true);
+                            }}
+                        >
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            ))}
+
+            <ConfirmDeleteModal
+                abierto={modalDelete}
+                participante={seleccionado}
+                onCancelar={() => setModalDelete(false)}
+                onConfirmar={eliminarParticipante}
+            />
+
+            <SuccessDeleteModal
+                abierto={modalDeleteSuccess}
+                mensaje="El participante fue eliminado."
+                onCerrar={() => setModalDeleteSuccess(false)}
+            />
         </div>
     );
 }
@@ -167,29 +148,42 @@ export default function AdminPanel() {
 
     return (
         <div className="panel-screen">
+
             <header className="panel-header">
-                <h1>🥘 Panel de Administrador</h1>
+                <div className="panel-brand">
+                    <img src="/logo.webp" alt="logo" />
+                    <h1>Panel Admin</h1>
+                </div>
+
                 <div className="panel-user">
                     <span>{adminSession.usuario?.nombre}</span>
-                    <button onClick={async () => { await logoutAdmin(); navigate('/'); }} className="logout-btn">
+                    <button
+                        onClick={async () => {
+                            await logoutAdmin();
+                            navigate('/');
+                        }}
+                        className="logout-btn"
+                    >
                         Cerrar sesión
                     </button>
                 </div>
             </header>
-            <main className="panel-main">
-                <h2>Bienvenido, {adminSession.usuario?.nombre}</h2>
-                <p>{adminSession.usuario?.email}</p>
 
-                <div className="panel-acciones">
-                    <Link to="/admin/crear-participante" className="panel-accion-btn">
-                        + Crear participante
-                    </Link>
-                    <Link to="/admin/papelera" className="panel-accion-btn">
-                        Ver papelera
-                    </Link>
+            <main className="panel-main">
+
+                <div className="panel-top">
+                    <h2>Participantes</h2>
+
+                    <div className="panel-acciones">
+                        <Link to="/admin/crear-participante" className="btn-crear">
+                            + Crear
+                        </Link>
+                        <Link to="/admin/papelera" className="btn-sec">
+                            Papelera
+                        </Link>
+                    </div>
                 </div>
 
-                <h3 className="panel-section-title">Participantes registrados</h3>
                 <TablaParticipantes token={adminSession.token} />
             </main>
         </div>

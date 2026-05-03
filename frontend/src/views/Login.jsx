@@ -5,6 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from "react-router-dom";
 import '../styles/Login.css';
 
+/* =========================
+   TAB VOTANTE
+========================= */
 function TabVotante() {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
@@ -24,6 +27,7 @@ function TabVotante() {
             const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
                 headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
             });
+
             const userInfo = await res.json();
 
             const backendRes = await fetch('http://127.0.0.1:8000/api/google-login/', {
@@ -31,6 +35,7 @@ function TabVotante() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: tokenResponse.access_token }),
             });
+
             const data = await backendRes.json();
 
             if (data.status === 'success') {
@@ -50,22 +55,6 @@ function TabVotante() {
         onError: () => setError('Error al iniciar sesión con Google.'),
     });
 
-   const handleLogout = async () => {
-    try {
-        // Notificar al backend (para votante no hay token JWT, solo confirmamos)
-        await fetch('http://127.0.0.1:8000/api/usuarios/logout/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        });
-    } catch {
-        // Error de red — igual cerramos sesión local
-    }
-
-    googleLogout();                         // Desconecta la sesión de Google
-    localStorage.removeItem('user_session');
-    setUser(null);                          // Regresa a la pantalla de login (ya está en '/')
-};
-
     if (user) {
         return (
             <div className="welcome-container">
@@ -74,7 +63,14 @@ function TabVotante() {
                 </div>
                 <h3>¡Qué bueno verte, {user.name.split(' ')[0]}!</h3>
                 <p>Ya puedes votar por tus platos favoritos.</p>
-                <button onClick={() => { googleLogout(); localStorage.removeItem('user_session'); setUser(null); }} className="logout-btn">
+                <button
+                    onClick={() => {
+                        googleLogout();
+                        localStorage.removeItem('user_session');
+                        setUser(null);
+                    }}
+                    className="logout-btn"
+                >
                     Cerrar Sesión
                 </button>
             </div>
@@ -85,14 +81,27 @@ function TabVotante() {
         <div className="tab-content fade-in">
             <p className="description">Apoya al mejor talento local con tu voto.</p>
             {error && <div className="error-badge">{error}</div>}
-            <button onClick={() => { setError(null); login(); }} className="google-btn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" />
+
+            <button
+                onClick={() => {
+                    setError(null);
+                    login();
+                }}
+                className="google-btn"
+            >
+                <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="G"
+                />
                 Continuar con Google
             </button>
         </div>
     );
 }
 
+/* =========================
+   TAB ADMIN
+========================= */
 function TabAdmin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -104,18 +113,23 @@ function TabAdmin() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+
         if (!email.trim() || !password.trim()) {
             setError('Todos los campos son obligatorios.');
             return;
         }
+
         setCargando(true);
+
         try {
             const res = await fetch('http://127.0.0.1:8000/api/usuarios/login/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
+
             const data = await res.json();
+
             if (res.ok) {
                 loginAdmin(data.token, data.usuario);
                 navigate('/admin/panel');
@@ -132,6 +146,7 @@ function TabAdmin() {
     return (
         <form className="admin-form fade-in" onSubmit={handleSubmit} noValidate>
             {error && <div className="error-badge">{error}</div>}
+
             <div className="input-group">
                 <input
                     type="email"
@@ -141,6 +156,7 @@ function TabAdmin() {
                     required
                 />
             </div>
+
             <div className="input-group">
                 <input
                     type="password"
@@ -150,9 +166,13 @@ function TabAdmin() {
                     required
                 />
             </div>
+
             <div className="form-footer">
-                <Link to="/ForgotPassword" id="forgot-link">¿Olvidaste tu contraseña?</Link>
+                <Link to="/ForgotPassword" id="forgot-link">
+                    ¿Olvidaste tu contraseña?
+                </Link>
             </div>
+
             <button type="submit" className="submit-btn" disabled={cargando}>
                 {cargando ? <span className="loader"></span> : 'Entrar al Panel'}
             </button>
@@ -160,17 +180,23 @@ function TabAdmin() {
     );
 }
 
+/* =========================
+   LOGIN PRINCIPAL
+========================= */
 export default function Login() {
     const [tab, setTab] = useState('votante');
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+    // 🔥 AQUÍ ESTÁ LA CORRECCIÓN
+    const clientId = "266067035625-stfd6fl5r3b355l6sb2uj6h8je46n4lu.apps.googleusercontent.com";
 
     return (
         <GoogleOAuthProvider clientId={clientId}>
             <div className="login-wrapper">
                 <div className="login-container">
-                    
+
                     <header className="login-header">
-                        <img src="logo.webp" alt="Logo Festival" className="main-logo" />
+                        {/* 🔥 IMPORTANTE: imagen desde /public */}
+                        <img src="/logo.webp" alt="Logo Festival" className="main-logo" />
                         <h1>Festival<span>Gastronómico</span></h1>
                     </header>
 
@@ -181,6 +207,7 @@ export default function Login() {
                         >
                             Votante
                         </button>
+
                         <button
                             className={`tab-link ${tab === 'admin' ? 'active' : ''}`}
                             onClick={() => setTab('admin')}
@@ -192,6 +219,7 @@ export default function Login() {
                     <main className="login-body">
                         {tab === 'votante' ? <TabVotante /> : <TabAdmin />}
                     </main>
+
                 </div>
             </div>
         </GoogleOAuthProvider>

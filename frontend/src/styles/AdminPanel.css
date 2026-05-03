@@ -1,0 +1,161 @@
+.panel-screen {
+  min-height: 100vh;
+  background: #f9fafb;
+  color: #111;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* HEADER */
+.panel-header {
+  background: white;
+  border-bottom: 1px solid #eee;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-brand img {
+  width: 40px;
+}
+
+.panel-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* LOGOUT */
+.logout-btn {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #000;
+}
+
+/* MAIN */
+.panel-main {
+  padding: 30px 40px;
+}
+
+.panel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+/* BOTONES */
+.btn-crear {
+  background: #22c55e;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.btn-sec {
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #333;
+}
+
+/* GRID */
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* CARD */
+.panel-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.panel-card:hover {
+  transform: translateY(-3px);
+}
+
+/* IMG */
+.panel-card-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* BADGE */
+.panel-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.panel-badge.on {
+  background: #22c55e;
+  color: white;
+}
+
+.panel-badge.off {
+  background: #f59e0b;
+  color: white;
+}
+
+/* ACTIONS */
+.panel-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+/* TOGGLE */
+.btn-toggle {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-toggle.on {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-toggle.off {
+  background: #f59e0b;
+  color: white;
+}
+
+/* DELETE */
+.btn-delete {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background: #dc2626;
+}
