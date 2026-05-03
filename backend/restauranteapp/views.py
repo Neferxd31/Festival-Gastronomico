@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from usuarioapp.authentication import AdminJWTAuthentication
 from .models import Restaurante, Plato
-from .serializers import RestauranteSerializer, CrearRestauranteSerializer
+from .serializers import RestauranteSerializer, CrearRestauranteSerializer, EditarRestauranteSerializer
 from festivalapp.models import Festival
 
 
@@ -176,3 +176,55 @@ def restaurar_restaurante(request, pk):
         return Response({
             "error": "No encontrado"
         }, status=404)
+
+
+@api_view(['PUT'])
+@authentication_classes([AdminJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def editar_restaurante(request, pk):
+    """Edita un restaurante existente y su plato estrella (solo admin)."""
+    try:
+        restaurante = Restaurante.objects.select_related('plato').get(pk=pk, eliminado=False)
+    except Restaurante.DoesNotExist:
+        return Response({'detail': 'Restaurante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = EditarRestauranteSerializer(data=request.data, partial=True)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    data = serializer.validated_data
+
+    with transaction.atomic():
+        # Actualiza solo los campos del restaurante que llegaron
+        for campo in ('nombre', 'descripcion', 'direccion', 'contacto', 'video_url'):
+            if campo in data:
+                setattr(restaurante, campo, data[campo])
+
+        # Fusiona redes sociales sin borrar las que no se enviaron
+        redes = restaurante.redes_sociales or {}
+        for red in ('instagram', 'facebook', 'tiktok'):
+            if red in data:
+                if data[red]:
+                    redes[red] = data[red]
+                else:
+                    redes.pop(red, None)
+        restaurante.redes_sociales = redes if redes else None
+        restaurante.save()
+
+        # Actualiza el plato si llegaron datos de él
+        campos_plato = {
+            'plato_nombre':      'nombre',
+            'plato_descripcion': 'descripcion',
+            'plato_imagen_url':  'imagen_url',
+        }
+        plato_data = {v: data[k] for k, v in campos_plato.items() if k in data}
+        if plato_data:
+            try:
+                plato_obj = restaurante.plato
+                for attr, val in plato_data.items():
+                    setattr(plato_obj, attr, val)
+                plato_obj.save()
+            except Plato.DoesNotExist:
+                Plato.objects.create(restaurante=restaurante, **plato_data)
+
+    return Response(RestauranteSerializer(restaurante).data, status=status.HTTP_200_OK)

@@ -1,0 +1,25 @@
+.panel-acciones-td {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.panel-toggle--edit {
+    background-color: #1a3a5c;
+    color: #60a5fa;
+    border: 1px solid #2563eb;
+}
+.panel-toggle--edit:hover {
+    background-color: #2563eb;
+    color: #fff;
+}
+
+.panel-mensaje-exito {
+  background-color: #0f2e1a;
+  border: 1px solid #22c55e;
+  color: #22c55e;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}

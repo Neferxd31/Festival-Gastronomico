@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import SuccessDeleteModal from '../components/modals/SuccessDeleteModal';
-import ConfirmToggleModal from '../components/modals/ConfirmToggleModal'; // <-- Importamos el nuevo modal
+import ConfirmToggleModal from '../components/modals/ConfirmToggleModal';
+import '../styles/panelacciones.css';
 
 function TablaParticipantes({ token }) {
     const { logoutAdmin } = useAuth();
@@ -140,13 +141,19 @@ function TablaParticipantes({ token }) {
                                     {r.habilitado ? 'Habilitado' : 'Deshabilitado'}
                                 </span>
                             </td>
-                            <td>
+                            <td className="panel-acciones-td">
                                 <button
                                     className={`panel-toggle ${r.habilitado ? 'panel-toggle--off' : 'panel-toggle--on'}`}
-                                    onClick={() => abrirModalToggle(r)} // <-- Ahora abre el modal y pasa el objeto completo
+                                    onClick={() => abrirModalToggle(r)}
                                     disabled={toggling === r.id}
                                 >
                                     {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
+                                </button>
+                                <button
+                                    className="panel-toggle panel-toggle--edit"
+                                    onClick={() => navigate(`/admin/editar-participante/${r.id}`, { state: { restaurante: r } })}
+                                >
+                                    Editar
                                 </button>
                                 <button
                                     className="btn-delete"
@@ -193,10 +200,20 @@ function TablaParticipantes({ token }) {
 export default function AdminPanel() {
     const { adminSession, logoutAdmin } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [mensajeExito, setMensajeExito] = useState(null);
 
     useEffect(() => {
         if (!adminSession) navigate('/');
     }, [adminSession, navigate]);
+
+    useEffect(() => {
+        if (location.state?.mensajeExito) {
+            setMensajeExito(location.state.mensajeExito);
+            window.history.replaceState({}, '');
+            setTimeout(() => setMensajeExito(null), 4000);
+        }
+    }, [location.state]);
 
     if (!adminSession) return null;
 
@@ -223,6 +240,10 @@ export default function AdminPanel() {
                         Ver papelera
                     </Link>
                 </div>
+
+                {mensajeExito && (
+                    <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
+                )}
 
                 <h3 className="panel-section-title">Participantes registrados</h3>
                 <TablaParticipantes token={adminSession.token} />
