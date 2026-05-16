@@ -367,3 +367,38 @@
 .det-red--ig { background-color: #833ab4; color: #fff; }
 .det-red--fb { background-color: #1877f2; color: #fff; }
 .det-red--tt { background-color: #111; color: #fff; border: 1px solid #333; }
+
+/* TOAST no pued votar  */
+.det-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 999;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: det-toast-in 0.3s ease;
+}
+
+.det-toast--error {
+  background-color: #1e1e1e;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+}
+
+.det-toast--info {
+  background-color: #1e1e1e;
+  border: 1px solid #f5c518;
+  color: #f5c518;
+}
+
+@keyframes det-toast-in {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
