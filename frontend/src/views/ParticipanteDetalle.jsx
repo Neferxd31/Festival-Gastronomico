@@ -22,7 +22,7 @@ export default function ParticipanteDetalle() {
     if (saved) setUser(JSON.parse(saved))
   }, [])
 
-  // Cargar datos del restaurante y sus comentarios (Unificado)
+  // Cargar datos del restaurante y sus comentarios
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/restaurantes/${id}/`)
       .then(r => {
@@ -30,7 +30,7 @@ export default function ParticipanteDetalle() {
         return r.json()
       })
       .then(data => {
-        console.log("Visualizando la data del backend:", data) // Útil para depurar
+        console.log("Visualizando la data del backend:", data)
         setRestaurante(data)
         setComentarios(data.comentarios || [])
       })
@@ -50,7 +50,6 @@ export default function ParticipanteDetalle() {
       navigate('/login')
       return
     }
-    // Lógica de voto — pendiente de implementar
     setVotado(true)
   }
 
@@ -80,7 +79,6 @@ export default function ParticipanteDetalle() {
         return r.json()
       })
       .then(comentarioGuardado => {
-        // Añadimos el nuevo comentario a la lista optimistamente
         setComentarios([comentarioGuardado, ...comentarios])
         setNuevoComentario('')
       })
@@ -97,7 +95,6 @@ export default function ParticipanteDetalle() {
     })
       .then(r => {
         if (!r.ok) throw new Error('No pudiste eliminar este comentario')
-        // Filtramos el comentario eliminado del estado local
         setComentarios(comentarios.filter(c => c.id !== comentarioId))
       })
       .catch(err => alert(err.message))
@@ -134,7 +131,8 @@ export default function ParticipanteDetalle() {
           {user ? (
             <div className="det-nav__user">
               <img src={user.picture} alt="avatar" referrerPolicy="no-referrer" />
-              <span>{user.name?.split(' ')[0]}</span>
+              {/* 👇 Aquí está la validación segura para evitar el error 'split of null' */}
+              <span>{user && user.name ? user.name.split(' ')[0] : 'Usuario'}</span>
               <button onClick={handleLogout} className="det-nav__logout">Salir</button>
             </div>
           ) : (
@@ -200,7 +198,7 @@ export default function ParticipanteDetalle() {
             </section>
           )}
 
-          {/* SECCIÓN DE COMENTARIOS MEJORADA */}
+          {/* SECCIÓN DE COMENTARIOS */}
           <section className="det-section det-comments-section">
             <h2>Comentarios ({comentarios.length})</h2>
 
@@ -233,19 +231,17 @@ export default function ParticipanteDetalle() {
                   <div key={comentario.id} className="det-comment-card">
                     <img
                       src={comentario.usuario_foto || 'https://via.placeholder.com/40'}
-                      alt={comentario.usuario_nombre}
+                      alt={comentario.usuario_nombre || 'Usuario'}
                       className="det-comment-card__avatar"
                       referrerPolicy="no-referrer"
                     />
                     <div className="det-comment-card__content">
                       <div className="det-comment-card__header">
-                        <h4>{comentario.usuario_nombre}</h4>
+                        <h4>{comentario.usuario_nombre || 'Usuario'}</h4>
                         <span className="det-comment-card__date">
-                          {/* Modificado a created_at */}
                           {comentario.created_at ? new Date(comentario.created_at).toLocaleDateString() : 'Reciente'}
                         </span>
                       </div>
-                      {/* Modificado a contenido */}
                       <p className="det-comment-card__text">{comentario.contenido}</p>
                     </div>
 

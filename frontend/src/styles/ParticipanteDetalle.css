@@ -249,20 +249,41 @@
   line-height: 1.6;
 }
 
-/* Video link */
-.det-video-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background-color: #1a1a1a;
+/* Video embed */
+.det-video-embed {
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #0a0a0a;
   border: 1px solid #2a2a2a;
-  border-radius: 10px;
-  padding: 14px 20px;
+}
+
+.det-video-embed iframe,
+.det-video-embed video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  border: none;
+}
+
+/* Fallback link (TikTok, otros) */
+.det-video-fallback {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
   color: #fff;
   text-decoration: none;
+  transition: background 0.2s;
+}
+
+.det-video-fallback:hover {
+  background-color: #1a1a1a;
+}
+
+.det-video-fallback strong {
+  display: block;
   font-size: 14px;
   font-weight: 600;
-  transition: border-color 0.2s;
 }
 
 .det-video-link:hover {
@@ -273,13 +294,26 @@
 .det-video-link__icon {
   width: 36px;
   height: 36px;
+}
+
+.det-video-fallback small {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.det-video-fallback__icon {
+  width: 44px;
+  height: 44px;
   background-color: #f5c518;
   color: #111;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
@@ -412,7 +446,7 @@
   border: 1px solid #333;
 }
 
-/* --- NUEVOS ESTILOS PARA COMENTARIOS --- */
+/* --- ESTILOS PARA COMENTARIOS --- */
 
 .det-comments-section {
   display: flex;
@@ -487,88 +521,13 @@
   font-weight: 600;
 }
 
-.det-comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 10px;
-}
-
-.det-no-comments {
-  color: #666;
-  font-size: 14px;
-  font-style: italic;
-}
-
-.det-comment-card {
-  display: flex;
-  gap: 14px;
-  background-color: #161616;
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid #222;
-  position: relative;
-  align-items: flex-start;
-}
-
-.det-comment-card__avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: #333;
-}
-
-.det-comment-card__content {
-  flex: 1;
-}
-
-.det-comment-card__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.det-comment-card__header h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-}
-
-.det-comment-card__date {
-  font-size: 12px;
-  color: #666;
-}
-
-.det-comment-card__text {
-  font-size: 14px;
-  color: #ccc;
-  line-height: 1.5;
-}
-
-.det-comment-card__delete-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 4px;
-  opacity: 0.4;
-  transition: opacity 0.2s, transform 0.1s;
-}
-
-.det-comment-card__delete-btn:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
 /* --- LISTA DE COMENTARIOS --- */
 .det-comments-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 24px;
-  text-align: left; /* Fuerza que todo el bloque vaya a la izquierda */
+  text-align: left;
 }
 
 .det-no-comments {
@@ -581,14 +540,14 @@
 /* --- TARJETA DE COMENTARIO INDIVIDUAL --- */
 .det-comment-card {
   display: flex;
-  flex-direction: row; /* Flujo estricto de izquierda a derecha */
+  flex-direction: row; 
   gap: 16px;
   background-color: #1a1a1a;
   padding: 20px;
   border-radius: 12px;
   border: 1px solid #2a2a2a;
   align-items: flex-start;
-  text-align: left; /* Evita que el texto herede centrados */
+  text-align: left;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s;
 }
@@ -603,9 +562,9 @@
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #f5c518; /* Un toque de amarillo para resaltar */
+  border: 2px solid #f5c518;
   background-color: #333;
-  flex-shrink: 0; /* Evita que la foto se aplaste si el texto es muy largo */
+  flex-shrink: 0;
 }
 
 /* --- CONTENIDO DEL COMENTARIO --- */
@@ -627,7 +586,7 @@
 .det-comment-card__header h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #f5c518; /* Nombre en amarillo para dar jerarquía */
+  color: #f5c518;
   margin: 0;
 }
 
@@ -638,10 +597,10 @@
 
 .det-comment-card__text {
   font-size: 15px;
-  color: #e0e0e0; /* Gris muy claro para lectura cómoda */
+  color: #e0e0e0;
   line-height: 1.6;
   margin: 0;
-  word-wrap: break-word; /* Evita que palabras largas rompan la caja */
+  word-wrap: break-word;
 }
 
 /* --- BOTÓN DE ELIMINAR --- */
@@ -659,6 +618,41 @@
 
 .det-comment-card__delete-btn:hover {
   opacity: 1;
-  color: #ff4757; /* Se pone rojo sutil al pasar el mouse */
+  color: #ff4757;
   transform: scale(1.1);
+}
+
+/* TOAST no pued votar  */
+.det-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 999;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: det-toast-in 0.3s ease;
+}
+
+.det-toast--error {
+  background-color: #1e1e1e;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+}
+
+.det-toast--info {
+  background-color: #1e1e1e;
+  border: 1px solid #f5c518;
+  color: #f5c518;
+}
+
+@keyframes det-toast-in {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
 }
