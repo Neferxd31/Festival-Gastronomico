@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import Restaurante, Plato
 
+# 1. IMPORTAR EL SERIALIZADOR DE COMENTARIOS (Asegúrate de que la ruta coincida con el nombre de tu app)
+from interaccionapp.serializers import ComentarioSerializer 
+
 
 class PlatoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,13 +13,17 @@ class PlatoSerializer(serializers.ModelSerializer):
 
 class RestauranteSerializer(serializers.ModelSerializer):
     plato = PlatoSerializer(read_only=True)
+    
+    # 2. AÑADIR EL CAMPO DE COMENTARIOS COMO UNA LISTA DE SOLO LECTURA
+    comentarios = ComentarioSerializer(many=True, read_only=True)
 
     class Meta:
         model = Restaurante
         fields = [
             'id', 'festival', 'nombre', 'descripcion', 'direccion',
             'contacto', 'redes_sociales', 'video_url', 'habilitado',
-            'created_at', 'plato'
+            'created_at', 'plato', 
+            'comentarios' # 3. AGREGAR 'comentarios' A LA LISTA DE CAMPOS
         ]
         read_only_fields = ['id', 'created_at']
 
