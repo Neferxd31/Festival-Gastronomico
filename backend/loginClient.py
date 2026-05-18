@@ -4,6 +4,9 @@ from django.db import connection, transaction
 import requests as http_requests
 import json
 
+from usuarioapp.utils import generar_token
+from usuarioapp.models import Usuario
+
 @csrf_exempt
 def google_login(request):
     if request.method == 'POST':
@@ -65,6 +68,25 @@ def google_login(request):
                         is_new = True
 
             # Preparamos los datos incluyendo si ya tiene cédula
+            # Generar token JWT para el votante
+            try:
+                usuario_obj = Usuario.objects.get(id=usuario_id)
+                token_jwt = generar_token(usuario_obj)
+            except Usuario.DoesNotExist:
+                token_jwt = None
+
+            # Preparamos los datos incluyendo si ya tiene cédula
+            user_data = {
+                "votante_id": votante_id,
+                "usuario_id": usuario_id,
+                "email": email,
+                "name": name,
+                "picture": foto_url,
+                "has_cedula": cedula_actual is not None and cedula_actual != "",
+                "is_new_user": is_new,
+                "token": token_jwt,   # <-- nuevo
+            }
+            """
             user_data = {
                 "votante_id": votante_id,
                 "usuario_id": usuario_id,
@@ -73,7 +95,7 @@ def google_login(request):
                 "picture": foto_url,
                 "has_cedula": cedula_actual is not None and cedula_actual != "", # Será True o False
                 "is_new_user": is_new
-            }
+            }"""
 
             return JsonResponse({"status": "success", "user": user_data})
 

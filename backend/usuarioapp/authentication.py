@@ -1,7 +1,7 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from .utils import verificar_token
-from .models import Usuario, Administrador
+from .models import Usuario, Administrador, Votante
 
 
 class AdminJWTAuthentication(BaseAuthentication):
@@ -30,6 +30,35 @@ class AdminJWTAuthentication(BaseAuthentication):
             ).get(id=payload["user_id"])
             _ = usuario.perfil_administrador  # confirma que es admin
         except (Usuario.DoesNotExist, Administrador.DoesNotExist):
+            raise AuthenticationFailed("Usuario no encontrado o sin permisos.")
+
+        return (usuario, token)
+    
+
+class VotanteJWTAuthentication(BaseAuthentication):
+    """
+    Autenticación JWT para votantes.
+    """
+
+    def authenticate(self, request):
+        auth_header = request.headers.get("Authorization", "")
+
+        if not auth_header.startswith("Bearer "):
+            return None
+
+        token = auth_header.split(" ")[1]
+
+        try:
+            payload = verificar_token(token)
+        except ValueError as e:
+            raise AuthenticationFailed(str(e))
+
+        try:
+            usuario = Usuario.objects.select_related(
+                "perfil_votante"
+            ).get(id=payload["user_id"])
+            _ = usuario.perfil_votante  # confirma que es votante
+        except (Usuario.DoesNotExist, Votante.DoesNotExist):
             raise AuthenticationFailed("Usuario no encontrado o sin permisos.")
 
         return (usuario, token)
