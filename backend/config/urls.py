@@ -9,5 +9,7 @@ urlpatterns = [
     path("api/usuarios/",       include("usuarioapp.urls")),
     path("api/restaurantes/",   include("restauranteapp.urls")),
     path("api/festivales/",     include("festivalapp.urls")),
-    path("api/interacciones/", include("interaccionapp.urls")),
+    
+    # Esta es la ruta correcta para tus comentarios y votos
+    path("api/",                include("interaccionapp.urls")),
 ]
