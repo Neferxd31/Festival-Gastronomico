@@ -660,7 +660,62 @@
   color: #f5c518;
 }
 
+/* CÉDULA */
+.det-cedula-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.det-cedula-box__label {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.det-cedula-box__numero {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f5c518;
+  letter-spacing: 1px;
+}
+
+.det-cedula-box__input {
+  background-color: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.det-cedula-box__input:focus {
+  border-color: #f5c518;
+}
+
+.det-cedula-box__editar {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-align: left;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.det-cedula-box__editar:hover {
+  color: #f5c518;
+}
+
 @keyframes det-toast-in {
   from { opacity: 0; transform: translate(-50%, -60%); }
   to   { opacity: 1; transform: translate(-50%, -50%); }
 }
+

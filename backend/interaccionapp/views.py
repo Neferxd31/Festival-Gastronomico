@@ -48,11 +48,10 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.response import Response
 from rest_framework import status
 
-from usuarioapp.authentication import AdminJWTAuthentication
+from usuarioapp.authentication import VotanteJWTAuthentication
 from usuarioapp.models import Votante
 from restauranteapp.models import Restaurante
 from .models import Voto
-from usuarioapp.authentication import VotanteJWTAuthentication
 
 
 @api_view(['POST'])
@@ -69,6 +68,29 @@ def votar_restaurante(request, restaurante_id):
             status=status.HTTP_403_FORBIDDEN
         )
 
+
+    cedula = request.data.get('cedula', '').strip()
+    if not cedula:
+        return Response(
+            {"detail": "La cédula es requerida para votar."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if votante.cedula and votante.cedula != cedula:
+        return Response(
+            {"detail": "La cédula no coincide con la registrada."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not votante.cedula:
+        if Votante.objects.filter(cedula=cedula).exists():
+            return Response(
+                {"detail": "Esta cédula ya está registrada por otro usuario."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        votante.cedula = cedula
+        votante.save()
+
     try:
         restaurante = Restaurante.objects.get(id=restaurante_id, habilitado=True, eliminado=False)
     except Restaurante.DoesNotExist:
@@ -77,9 +99,11 @@ def votar_restaurante(request, restaurante_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    if Voto.objects.filter(usuario=votante, restaurante=restaurante).exists():
+
+        # Después - verifica cualquier restaurante
+    if Voto.objects.filter(usuario=votante).exists():
         return Response(
-            {"detail": "Ya votaste por este restaurante."},
+            {"detail": "Ya usaste tu voto. Solo se permite votar por un restaurante."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -92,7 +116,6 @@ def votar_restaurante(request, restaurante_id):
         {"mensaje": f"Voto registrado para {restaurante.nombre}."},
         status=status.HTTP_201_CREATED
     )
-
 
 @api_view(['DELETE'])
 @authentication_classes([VotanteJWTAuthentication])
@@ -136,6 +159,7 @@ def eliminar_voto(request, restaurante_id):
     )
 
 
+
 @api_view(['GET'])
 @authentication_classes([VotanteJWTAuthentication])
 @permission_classes([])
@@ -145,11 +169,17 @@ def verificar_voto(request, restaurante_id):
     try:
         votante = Votante.objects.get(usuario=usuario)
     except Votante.DoesNotExist:
-        return Response({"votado": False})
 
-    existe = Voto.objects.filter(
-        usuario=votante,
-        restaurante_id=restaurante_id
-    ).exists()
+        return Response({"ya_voto": False})
 
-    return Response({"votado": existe})
+    voto = Voto.objects.filter(usuario=votante).first()
+
+    if not voto:
+        return Response({"ya_voto": False, "cedula": votante.cedula or None, "has_cedula": bool(votante.cedula)})
+
+    return Response({
+        "ya_voto": True,
+        "voto_en_este": voto.restaurante_id == restaurante_id,
+        "cedula": votante.cedula or None,
+        "has_cedula": bool(votante.cedula)
+    })

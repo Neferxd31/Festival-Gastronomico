@@ -6,21 +6,32 @@ import '../styles/ParticipanteDetalle.css'
 export default function ParticipanteDetalle() {
   const { id } = useParams()
   const navigate = useNavigate()
-
-  const [restaurante, setRestaurante] = useState(null)
-  const [comentarios, setComentarios] = useState([]) 
-  const [nuevoComentario, setNuevoComentario] = useState('') 
-  const [cargando, setCargando] = useState(true)
-  const [error, setError] = useState(false)
-  const [user, setUser] = useState(null)
-  const [votado, setVotado] = useState(false)
-  const [enviandoComentario, setEnviandoComentario] = useState(false)
+const [restaurante, setRestaurante] = useState(null);
+const [comentarios, setComentarios] = useState([]);
+const [nuevoComentario, setNuevoComentario] = useState('');
+const [enviandoComentario, setEnviandoComentario] = useState(false);
+const [cargando, setCargando] = useState(true);
+const [error, setError] = useState(false);
+const [user, setUser] = useState(null);
+const [votado, setVotado] = useState(false);
+const [toast, setToast] = useState(null);
+const [cedula, setCedula] = useState("");
+const [editandoCedula, setEditandoCedula] = useState(false);
+const [mostrarCedula, setMostrarCedula] = useState(false);
+const [votoEnEste, setVotoEnEste] = useState(false);
 
   // Cargar usuario desde localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('user_session')
-    if (saved) setUser(JSON.parse(saved))
-  }, [])
+    const saved = localStorage.getItem("user_session");
+    if (saved) {
+      const userData = JSON.parse(saved);
+      setUser(userData);
+      if (userData.has_cedula && userData.cedula) {
+        setCedula(userData.cedula);
+      }
+    }
+  }, []);
+
 
   // Cargar datos del restaurante y sus comentarios
   useEffect(() => {
@@ -44,7 +55,28 @@ export default function ParticipanteDetalle() {
     setUser(null)
   }
 
-  const handleVotar = () => {
+
+  useEffect(() => {
+    if (!user || !restaurante) return;
+
+    fetch(`http://127.0.0.1:8000/api/interacciones/${id}/verificar-voto/`, {
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ya_voto) {
+          setVotado(true);
+          setVotoEnEste(data.voto_en_este || false);
+          if (data.cedula) setCedula(data.cedula);
+        }
+      })
+      .catch(() => {});
+  }, [user, restaurante]);
+
+  const handleVotar = async () => {
+
     if (!user) {
       localStorage.setItem('redirect_after_login', `/participantes/${id}`)
       navigate('/login')
@@ -103,10 +135,33 @@ export default function ParticipanteDetalle() {
       .catch(err => alert(err.message))
       .finally(() => setEnviandoComentario(false))
   }
+    const cedulaAEnviar = cedula.trim();
+    if (!cedulaAEnviar) {
+      setToast({
+        mensaje: "Por favor ingresa tu cédula para votar.",
+        tipo: "error",
+      });
+      setTimeout(() => setToast(null), 3500);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/interacciones/${id}/votar/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ cedula: cedulaAEnviar }),
+        },
+      );
 
   // --- FUNCIONALIDAD: ELIMINAR COMENTARIO ---
   const handleEliminarComentario = (comentarioId) => {
     if (!window.confirm('¿Seguro que quieres eliminar este comentario?')) return
+
 
     fetch(`http://127.0.0.1:8000/api/comentarios/${comentarioId}/`, {
       method: 'DELETE',
@@ -117,6 +172,25 @@ export default function ParticipanteDetalle() {
       })
       .catch(err => alert(err.message))
   }
+
+      if (res.ok) {
+        setVotado(true);
+        setEditandoCedula(false);
+      } else {
+        setToast({
+          mensaje: data.detail || "No se pudo registrar el voto.",
+          tipo: "error",
+        });
+        setTimeout(() => setToast(null), 3500);
+      }
+    } catch {
+      setToast({
+        mensaje: "Error de conexión. Intenta de nuevo.",
+        tipo: "error",
+      });
+      setTimeout(() => setToast(null), 3500);
+    }
+  };
 
   if (cargando) {
     return (
@@ -293,9 +367,76 @@ export default function ParticipanteDetalle() {
             {votado ? (
               <div className="det-vote-box__confirmado">
                 <span>✅</span>
-                <p>¡Voto registrado!</p>
-                <small>Gracias por participar</small>
+                {votoEnEste ? (
+                  <>
+                    <p>¡Ya votaste por este restaurante!</p>
+                    {cedula && (
+                      <small>
+                        Cédula con la que votaste: <strong>{cedula}</strong>
+                      </small>
+                    )}
+                    <small>Gracias por participar</small>
+                  </>
+                ) : (
+                  <p>
+                    Ya usaste tu voto. Solo se permite votar por un restaurante.
+                  </p>
+                )}
               </div>
+            ) : user ? (
+              <>
+                <p className="det-vote-box__label">
+                  ¿Es tu favorito? ¡Dale tu voto!
+                </p>
+                {mostrarCedula ? (
+                  <div className="det-cedula-box">
+                    <label className="det-cedula-box__label">
+                      {user.has_cedula
+                        ? "Confirma tu cédula:"
+                        : "Ingresa tu cédula:"}
+                    </label>
+                    {user.has_cedula && !editandoCedula ? (
+                      <>
+                        <p className="det-cedula-box__numero">{cedula}</p>
+                        <button
+                          className="det-cedula-box__editar"
+                          onClick={() => setEditandoCedula(true)}
+                        >
+                          Editar cédula
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          className="det-cedula-box__input"
+                          placeholder="Ej: 1234567890"
+                          value={cedula}
+                          onChange={(e) => setCedula(e.target.value)}
+                        />
+                        {user.has_cedula && (
+                          <button
+                            className="det-cedula-box__editar"
+                            onClick={() => setEditandoCedula(false)}
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                      </>
+                    )}
+                    <button className="det-vote-btn" onClick={handleVotar}>
+                      Confirmar y votar
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="det-vote-btn"
+                    onClick={() => setMostrarCedula(true)}
+                  >
+                    Votar por {restaurante.nombre}
+                  </button>
+                )}
+              </>
             ) : (
               <>
                 <p className="det-vote-box__label">
@@ -305,6 +446,7 @@ export default function ParticipanteDetalle() {
                 </p>
                 <button className="det-vote-btn" onClick={handleVotar}>
                   {user ? `Votar por ${restaurante.nombre}` : 'Iniciar sesión para votar'}
+
                 </button>
               </>
             )}
@@ -358,4 +500,3 @@ export default function ParticipanteDetalle() {
 
     </div>
   )
-}
