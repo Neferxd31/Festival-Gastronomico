@@ -1,13 +1,29 @@
 /* --- Variables de Diseño --- */
 :root {
-    --primary: #ff6b35;
-    /* Naranja vibrante para comida */
-    --primary-hover: #f15a22;
-    --bg-gradient: radial-gradient(circle at top left, #2d1b0e 0%, #0f172a 100%);
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --input-bg: rgba(0, 0, 0, 0.25);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --primary: #facc15;
+    /* Amarillo principal del landing */
+    --primary-hover: #eab308;
+    --secondary: #111827;
+    --bg-main: #050505;
+
+    /* Degradado consistente con el home */
+    --bg-gradient:
+        radial-gradient(circle at top center,
+            rgba(250, 204, 21, 0.08) 0%,
+            rgba(0, 0, 0, 0) 30%),
+        linear-gradient(135deg,
+            #050505 0%,
+            #0b0b0b 40%,
+            #111827 100%);
+
+    /* Card más oscura como la página principal */
+ --card-bg: rgba(10, 10, 10, 0.45);
+
+    --input-bg: rgba(255, 255, 255, 0.04);
+
+    --text-main: #f9fafb;
+    --text-muted: #9ca3af;
+
     --error: #f87171;
     --success: #4ade80;
 }
@@ -21,24 +37,51 @@
     background: var(--bg-gradient);
     padding: 20px;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glow amarillo sutil */
+.login-wrapper::before {
+    content: "";
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: rgba(250, 204, 21, 0.08);
+    filter: blur(120px);
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 0;
 }
 
 .login-container {
+    position: relative;
+    z-index: 1;
+
     width: 100%;
     max-width: 420px;
+
     background: var(--card-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
     border-radius: 28px;
+
     padding: 40px 30px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+
+   box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
 /* --- Header y Logo --- */
 .login-header {
     text-align: center;
     margin-bottom: 30px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -46,10 +89,12 @@
 
 .main-logo {
     width: 150px;
-    /* Tamaño controlado para evitar desbordamiento */
     height: auto;
+
     margin-bottom: 15px;
-    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.3));
+
+    filter: drop-shadow(0 10px 20px rgba(250, 204, 21, 0.15));
+
     transition: transform 0.3s ease;
 }
 
@@ -59,51 +104,81 @@
 
 .login-header h1 {
     color: var(--text-main);
-    font-size: 1.6rem;
+
+    font-size: 1.7rem;
     font-weight: 800;
+
     letter-spacing: -0.5px;
+
     margin: 0;
 }
 
 .login-header h1 span {
     display: block;
+
     color: var(--primary);
+
     text-transform: uppercase;
+
     font-size: 0.8rem;
-    letter-spacing: 4px;
-    margin-top: 5px;
+
+    letter-spacing: 5px;
+
+    margin-top: 6px;
 }
 
-/* --- Selector de Pestañas (Tabs) --- */
+/* --- Selector de Tabs --- */
 .tabs-container {
     display: flex;
-    background: rgba(0, 0, 0, 0.3);
+
+    background: rgba(255, 255, 255, 0.03);
+
     padding: 6px;
+
     border-radius: 16px;
+
     margin-bottom: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .tab-link {
     flex: 1;
+
     padding: 12px;
+
     border: none;
+
     background: transparent;
+
     color: var(--text-muted);
+
     font-weight: 600;
+
     font-size: 0.95rem;
+
     cursor: pointer;
+
     border-radius: 12px;
+
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-link:hover {
+    color: white;
 }
 
 .tab-link.active {
     background: var(--primary);
-    color: white;
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.35);
+
+    color: #111827;
+
+    box-shadow:
+        0 8px 20px rgba(250, 204, 21, 0.25),
+        0 0 20px rgba(250, 204, 21, 0.12);
 }
 
-/* --- Contenido de las Tabs --- */
+/* --- Contenido --- */
 .tab-content,
 .admin-form {
     display: flex;
@@ -113,34 +188,52 @@
 
 .description {
     color: var(--text-muted);
+
     font-size: 0.95rem;
+
     text-align: center;
+
     margin-bottom: 10px;
+
+    line-height: 1.5;
 }
 
 /* --- Botón Google --- */
 .google-btn {
     width: 100%;
+
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
+
     padding: 14px;
-    background: white;
+
+    background: rgba(255, 255, 255, 0.92);
+
     border: none;
+
     border-radius: 14px;
-    color: #1e293b;
+
+    color: #111827;
+
     font-weight: 700;
+
     font-size: 1rem;
+
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+    transition: all 0.25s ease;
 }
 
 .google-btn:hover {
-    background: #f8fafc;
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+
+    background: white;
+
+    box-shadow:
+        0 12px 20px rgba(0, 0, 0, 0.25),
+        0 0 15px rgba(250, 204, 21, 0.08);
 }
 
 .google-btn img {
@@ -148,7 +241,7 @@
     height: 20px;
 }
 
-/* --- Formulario de Administrador --- */
+/* --- Inputs --- */
 .input-group {
     position: relative;
     width: 100%;
@@ -156,27 +249,41 @@
 
 .input-group input {
     width: 100%;
+
     padding: 15px 18px;
+
     background: var(--input-bg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
     border-radius: 14px;
+
     color: white;
+
     font-size: 1rem;
+
     box-sizing: border-box;
+
     transition: all 0.3s ease;
 }
 
 .input-group input:focus {
     outline: none;
-    border-color: var(--primary);
-    background: rgba(0, 0, 0, 0.4);
-    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.15);
+
+    border-color: rgba(250, 204, 21, 0.5);
+
+    background: rgba(255, 255, 255, 0.06);
+
+    box-shadow:
+        0 0 0 4px rgba(250, 204, 21, 0.12),
+        0 0 18px rgba(250, 204, 21, 0.08);
 }
 
 .input-group input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.28);
 }
 
+/* --- Footer del form --- */
 .form-footer {
     text-align: right;
     margin-top: -8px;
@@ -184,8 +291,11 @@
 
 #forgot-link {
     color: var(--text-muted);
+
     font-size: 0.85rem;
+
     text-decoration: none;
+
     transition: color 0.2s;
 }
 
@@ -193,23 +303,41 @@
     color: var(--primary);
 }
 
+/* --- Botón principal --- */
 .submit-btn {
     width: 100%;
+
     padding: 16px;
-    background: linear-gradient(135deg, var(--primary), #f15a22);
+
+    background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-hover)
+    );
+
     border: none;
+
     border-radius: 14px;
-    color: white;
+
+    color: #111827;
+
     font-weight: 800;
+
     font-size: 1rem;
+
     cursor: pointer;
+
     margin-top: 10px;
+
     transition: all 0.3s ease;
 }
 
 .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 12px 20px -5px rgba(241, 90, 34, 0.4);
+
+    box-shadow:
+        0 14px 24px rgba(250, 204, 21, 0.22),
+        0 0 20px rgba(250, 204, 21, 0.12);
 }
 
 .submit-btn:disabled {
@@ -217,18 +345,26 @@
     cursor: not-allowed;
 }
 
-/* --- Mensajes de Error y Bienvenida --- */
+/* --- Mensajes --- */
 .error-badge {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.12);
+
     color: var(--error);
+
     padding: 12px;
+
     border-radius: 12px;
+
     border: 1px solid rgba(239, 68, 68, 0.2);
+
     font-size: 0.85rem;
+
     text-align: center;
+
     animation: shake 0.4s ease-in-out;
 }
 
+/* --- Welcome --- */
 .welcome-container {
     text-align: center;
     padding: 20px 0;
@@ -237,20 +373,37 @@
 .profile-badge img {
     width: 80px;
     height: 80px;
+
     border-radius: 50%;
+
     border: 3px solid var(--primary);
+
     padding: 3px;
+
     margin-bottom: 15px;
 }
 
 .logout-btn {
     margin-top: 20px;
+
     background: transparent;
-    border: 1px solid var(--text-muted);
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
     color: var(--text-muted);
+
     padding: 8px 20px;
+
     border-radius: 10px;
+
     cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+.logout-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 /* --- Animaciones --- */
@@ -286,14 +439,19 @@
     animation: fadeIn 0.5s ease-out;
 }
 
-/* --- Loader sutil --- */
+/* --- Loader --- */
 .loader {
     width: 20px;
     height: 20px;
+
     border: 3px solid rgba(255, 255, 255, 0.3);
+
     border-radius: 50%;
+
     border-top-color: #fff;
+
     animation: spin 1s ease-in-out infinite;
+
     display: inline-block;
 }
 
@@ -305,11 +463,16 @@
 
 /* --- Responsive --- */
 @media (max-width: 480px) {
+
     .login-container {
         padding: 30px 20px;
     }
 
     .login-header h1 {
-        font-size: 1.3rem;
+        font-size: 1.35rem;
+    }
+
+    .main-logo {
+        width: 120px;
     }
 }
