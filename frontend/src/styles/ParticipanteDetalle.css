@@ -249,20 +249,28 @@
   line-height: 1.6;
 }
 
-/* Video embed */
-.det-video-embed {
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: #0a0a0a;
-  border: 1px solid #2a2a2a;
+.det-video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 */
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 16px;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.35);
+
+    background: #000;
 }
 
-.det-video-embed iframe,
-.det-video-embed video {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  display: block;
-  border: none;
+.det-video-container iframe {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    border: none;
 }
 
 /* Fallback link (TikTok, otros) */
