@@ -53,6 +53,24 @@ export default function ParticipanteDetalle() {
     setVotado(true)
   }
 
+  const getYoutubeEmbedUrl = (url) => {
+  if (!url) return ''
+
+  // Caso youtu.be
+  if (url.includes('youtu.be')) {
+    const videoId = url.split('/').pop()
+    return `https://www.youtube.com/embed/${videoId}`
+  }
+
+  // Caso youtube.com/watch?v=
+  if (url.includes('watch?v=')) {
+    const videoId = url.split('watch?v=')[1].split('&')[0]
+    return `https://www.youtube.com/embed/${videoId}`
+  }
+
+  return url
+}
+
   // --- FUNCIONALIDAD: AGREGAR COMENTARIO ---
   const handleAgregarComentario = (e) => {
     e.preventDefault()
@@ -188,15 +206,20 @@ export default function ParticipanteDetalle() {
           )}
 
           {/* Video */}
-          {restaurante.video_url && (
-            <section className="det-section">
-              <h2>Video</h2>
-              <a href={restaurante.video_url} target="_blank" rel="noreferrer" className="det-video-link">
-                <span className="det-video-link__icon">▶</span>
-                Ver video del restaurante
-              </a>
-            </section>
-          )}
+{restaurante.video_url && (
+  <section className="det-section">
+    <h2>Video</h2>
+
+    <div className="det-video-container">
+      <iframe
+        src={getYoutubeEmbedUrl(restaurante.video_url)}
+        title="Video del restaurante"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+  </section>
+)}
 
           {/* SECCIÓN DE COMENTARIOS */}
           <section className="det-section det-comments-section">
