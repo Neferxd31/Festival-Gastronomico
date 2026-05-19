@@ -12,4 +12,6 @@ urlpatterns = [
     
     # Esta es la ruta correcta para tus comentarios y votos
     path("api/",                include("interaccionapp.urls")),
+    path("api/interacciones/", include("interaccionapp.urls")),
+
 ]

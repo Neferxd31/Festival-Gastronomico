@@ -69,6 +69,29 @@ def votar_restaurante(request, restaurante_id):
             status=status.HTTP_403_FORBIDDEN
         )
 
+    cedula = request.data.get('cedula', '').strip()
+    if not cedula:
+        return Response(
+            {"detail": "La cédula es requerida para votar."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if votante.cedula and votante.cedula != cedula:
+        return Response(
+            {"detail": "La cédula no coincide con la registrada."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Después
+    if not votante.cedula:
+        if Votante.objects.filter(cedula=cedula).exists():
+            return Response(
+                {"detail": "Esta cédula ya está registrada por otro usuario."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        votante.cedula = cedula
+        votante.save()
+
     try:
         restaurante = Restaurante.objects.get(id=restaurante_id, habilitado=True, eliminado=False)
     except Restaurante.DoesNotExist:
@@ -77,14 +100,13 @@ def votar_restaurante(request, restaurante_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    if Voto.objects.filter(usuario=votante, restaurante=restaurante).exists():
+    if Voto.objects.filter(usuario=votante).exists():
         return Response(
-            {"detail": "Ya votaste por este restaurante."},
+            {"detail": "Ya usaste tu voto. Solo se permite votar por un restaurante."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     Voto.objects.create(usuario=votante, restaurante=restaurante)
-
     restaurante.votos_total += 1
     restaurante.save()
 
@@ -145,11 +167,16 @@ def verificar_voto(request, restaurante_id):
     try:
         votante = Votante.objects.get(usuario=usuario)
     except Votante.DoesNotExist:
-        return Response({"votado": False})
+        return Response({"ya_voto": False})
 
-    existe = Voto.objects.filter(
-        usuario=votante,
-        restaurante_id=restaurante_id
-    ).exists()
+    voto = Voto.objects.filter(usuario=votante).first()
 
-    return Response({"votado": existe})
+    if not voto:
+        return Response({"ya_voto": False, "cedula": votante.cedula or None, "has_cedula": bool(votante.cedula)})
+
+    return Response({
+        "ya_voto": True,
+        "voto_en_este": voto.restaurante_id == restaurante_id,
+        "cedula": votante.cedula or None,
+        "has_cedula": bool(votante.cedula)
+    })
