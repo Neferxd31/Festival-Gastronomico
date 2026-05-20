@@ -103,14 +103,17 @@ export default function ParticipanteDetalle() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ cedula: cedulaAEnviar }),
-        },
+        }
       );
 
       const data = await res.json();
 
       if (res.ok) {
         setVotado(true);
+        setVotoEnEste(true);
         setEditandoCedula(false);
+        setToast({ mensaje: "¡Voto registrado con éxito!", tipo: "exito" });
+        setTimeout(() => setToast(null), 3500);
       } else {
         setToast({
           mensaje: data.detail || "No se pudo registrar el voto.",
@@ -127,16 +130,52 @@ export default function ParticipanteDetalle() {
     }
   };
 
+  const handleEliminarVoto = async () => {
+    if (!window.confirm("¿Seguro que quieres eliminar tu voto?")) return;
+
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/interacciones/${id}/eliminar-voto/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setVotado(false);
+        setVotoEnEste(false);
+        setMostrarCedula(false);
+        setToast({ mensaje: "Voto eliminado correctamente.", tipo: "exito" });
+        setTimeout(() => setToast(null), 3500);
+      } else {
+        setToast({
+          mensaje: data.detail || "No se pudo eliminar el voto.",
+          tipo: "error",
+        });
+        setTimeout(() => setToast(null), 3500);
+      }
+    } catch {
+      setToast({
+        mensaje: "Error de conexión. Intenta de nuevo.",
+        tipo: "error",
+      });
+      setTimeout(() => setToast(null), 3500);
+    }
+  };
+
   const getYoutubeEmbedUrl = (url) => {
     if (!url) return "";
 
-    // Caso youtu.be
     if (url.includes("youtu.be")) {
       const videoId = url.split("/").pop();
       return `https://www.youtube.com/embed/${videoId}`;
     }
 
-    // Caso youtube.com/watch?v=
     if (url.includes("watch?v=")) {
       const videoId = url.split("watch?v=")[1].split("&")[0];
       return `https://www.youtube.com/embed/${videoId}`;
@@ -214,7 +253,6 @@ export default function ParticipanteDetalle() {
 
   const redes = restaurante.redes_sociales || {};
 
-
   return (
     <div className="det-wrapper">
       {/* NAVBAR */}
@@ -232,7 +270,6 @@ export default function ParticipanteDetalle() {
                 alt="avatar"
                 referrerPolicy="no-referrer"
               />
-              {/* 👇 Aquí está la validación segura para evitar el error 'split of null' */}
               <span>
                 {user && user.name ? user.name.split(" ")[0] : "Usuario"}
               </span>
@@ -306,7 +343,6 @@ export default function ParticipanteDetalle() {
           {restaurante.video_url && (
             <section className="det-section">
               <h2>Video</h2>
-
               <div className="det-video-container">
                 <iframe
                   src={getYoutubeEmbedUrl(restaurante.video_url)}
@@ -322,7 +358,6 @@ export default function ParticipanteDetalle() {
           <section className="det-section det-comments-section">
             <h2>Comentarios ({comentarios.length})</h2>
 
-            {/* Formulario para agregar comentario */}
             {user ? (
               <form
                 onSubmit={handleAgregarComentario}
@@ -348,7 +383,6 @@ export default function ParticipanteDetalle() {
               </div>
             )}
 
-            {/* Lista de comentarios */}
             <div className="det-comments-list">
               {comentarios.length === 0 ? (
                 <p className="det-no-comments">
@@ -372,7 +406,7 @@ export default function ParticipanteDetalle() {
                         <span className="det-comment-card__date">
                           {comentario.created_at
                             ? new Date(
-                                comentario.created_at,
+                                comentario.created_at
                               ).toLocaleDateString()
                             : "Reciente"}
                         </span>
@@ -382,7 +416,6 @@ export default function ParticipanteDetalle() {
                       </p>
                     </div>
 
-                    {/* Botón de eliminar solo visible si el usuario es el dueño del comentario */}
                     {user && user.email === comentario.usuario_email && (
                       <button
                         onClick={() => handleEliminarComentario(comentario.id)}
@@ -415,10 +448,17 @@ export default function ParticipanteDetalle() {
                       </small>
                     )}
                     <small>Gracias por participar</small>
+                    <button
+                      className="det-vote-btn det-vote-btn--eliminar"
+                      onClick={handleEliminarVoto}
+                    >
+                      Eliminar mi voto
+                    </button>
                   </>
                 ) : (
                   <p>
-                    Ya usaste tu voto. Solo se permite votar por un restaurante.
+                    Ya usaste tu voto en otro restaurante. Solo se permite votar
+                    por uno.
                   </p>
                 )}
               </div>
@@ -573,6 +613,8 @@ export default function ParticipanteDetalle() {
           )}
         </aside>
       </div>
+
+      {/* TOAST */}
       {toast && (
         <div className={`det-toast det-toast--${toast.tipo}`}>
           <span>{toast.mensaje}</span>
