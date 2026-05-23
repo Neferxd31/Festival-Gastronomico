@@ -307,6 +307,210 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── BOTÓN ESTADÍSTICAS ACTIVO ── */
+.panel-accion-btn--active {
+  background-color: #f5c518 !important;
+  color: #111 !important;
+  border-color: #f5c518 !important;
+}
+
+/* ── ESTADÍSTICAS EN TIEMPO REAL ── */
+.stats-section {
+  margin: 20px 40px;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  padding: 24px;
+  animation: panelFadeSlide 0.35s ease both;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stats-header__left {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.stats-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.stats-total {
+  font-size: 13px;
+  color: #888;
+  background-color: #222;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.stats-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-toggle-btn {
+  background-color: rgba(245, 197, 24, 0.12);
+  color: #f5c518;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.stats-toggle-btn:hover {
+  background-color: rgba(245, 197, 24, 0.25);
+}
+.stats-toggle-btn--paused {
+  background-color: rgba(46, 204, 113, 0.12);
+  color: #2ecc71;
+}
+.stats-toggle-btn--paused:hover {
+  background-color: rgba(46, 204, 113, 0.25);
+}
+
+.stats-timestamp {
+  font-size: 12px;
+  color: #555;
+}
+
+/* RANKING */
+.stats-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background-color: #222;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: border-color 0.25s, background 0.25s;
+  animation: panelFadeSlide 0.35s ease both;
+}
+.stats-row:hover {
+  border-color: #333;
+  background-color: #282828;
+}
+
+/* Líder */
+.stats-row--leader {
+  border-color: rgba(245, 197, 24, 0.3);
+  background: linear-gradient(135deg, rgba(245, 197, 24, 0.08), transparent);
+}
+.stats-row--leader .stats-row__nombre {
+  color: #f5c518;
+}
+.stats-row--leader .stats-bar__fill {
+  background: linear-gradient(90deg, #f5c518, #e0b200);
+}
+
+/* Posición */
+.stats-row__pos {
+  font-size: 20px;
+  width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Imagen */
+.stats-row__img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #333;
+}
+.stats-row__img--empty {
+  background: linear-gradient(135deg, #2a2a2a, #333);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #444;
+}
+
+/* Info */
+.stats-row__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-row__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats-row__nombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-row__votos {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.stats-row__plato {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Barra de progreso */
+.stats-bar {
+  height: 6px;
+  background-color: #333;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stats-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #60a5fa, #3b82f6);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+}
+
+/* Porcentaje */
+.stats-row__pct {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .panel-header   { padding: 14px 20px; }
@@ -314,4 +518,11 @@
   .panel-tabla-wrap { padding: 20px; }
   .panel-grid     { grid-template-columns: 1fr; }
   .panel-section-title { padding: 20px 20px 0; }
+
+  .stats-section { margin: 16px 20px; padding: 16px; }
+  .stats-header  { flex-direction: column; align-items: flex-start; }
+  .stats-row     { padding: 10px 12px; gap: 10px; }
+  .stats-row__img { width: 36px; height: 36px; }
+  .stats-row__pos { font-size: 16px; width: 28px; }
+  .stats-row__pct { font-size: 14px; width: 44px; }
 }

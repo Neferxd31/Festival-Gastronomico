@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
+from django.db.models import Count
 from django.utils import timezone
 
 from usuarioapp.authentication import AdminJWTAuthentication
@@ -228,3 +229,38 @@ def editar_restaurante(request, pk):
                 Plato.objects.create(restaurante=restaurante, **plato_data)
 
     return Response(RestauranteSerializer(restaurante).data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([AdminJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def estadisticas_votos(request):
+    """Retorna estadísticas de votos por restaurante (solo admin)."""
+    restaurantes = (
+        Restaurante.objects
+        .filter(eliminado=False)
+        .select_related('plato')
+        .annotate(votos_count=Count('votos'))
+        .order_by('-votos_count')
+    )
+
+    total_votos = sum(r.votos_count for r in restaurantes)
+
+    data = []
+    for r in restaurantes:
+        porcentaje = round((r.votos_count / total_votos) * 100, 1) if total_votos > 0 else 0
+        data.append({
+            'id': r.id,
+            'nombre': r.nombre,
+            'plato_nombre': r.plato.nombre if hasattr(r, 'plato') and r.plato else None,
+            'plato_imagen': r.plato.imagen_url if hasattr(r, 'plato') and r.plato else None,
+            'votos': r.votos_count,
+            'porcentaje': porcentaje,
+            'habilitado': r.habilitado,
+        })
+
+    return Response({
+        'total_votos': total_votos,
+        'restaurantes': data,
+        'timestamp': timezone.now().isoformat(),
+    })

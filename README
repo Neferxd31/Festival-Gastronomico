@@ -20,3 +20,5 @@ pip freeze > requirements.txt
 Para frontend Frontend
 cd frontend
 npm install
+----------------------------
+(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& "c:\Users\Lenovo\Desktop\8 Semestre\API\Festival-Gastronomico\venv\Scripts\Activate.ps1")

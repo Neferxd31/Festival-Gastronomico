@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal'
@@ -161,11 +161,129 @@ function GridParticipantes({ token }) {
   )
 }
 
+function EstadisticasVotos({ token }) {
+  const { logoutAdmin } = useAuth()
+  const navigate = useNavigate()
+
+  const [stats, setStats] = useState(null)
+  const [cargando, setCargando] = useState(true)
+  const [ultimaAct, setUltimaAct] = useState(null)
+  const [pausado, setPausado] = useState(false)
+  const intervalRef = useRef(null)
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/restaurantes/estadisticas/', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.status === 401) { logoutAdmin(); navigate('/'); return }
+      const data = await res.json()
+      setStats(data)
+      setUltimaAct(new Date())
+    } catch { /* silencioso */ }
+    finally { setCargando(false) }
+  }, [token, logoutAdmin, navigate])
+
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
+
+  useEffect(() => {
+    if (pausado) {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      return
+    }
+    intervalRef.current = setInterval(fetchStats, 10000)
+    return () => clearInterval(intervalRef.current)
+  }, [pausado, fetchStats])
+
+  if (cargando) return <p className="panel-empty">Cargando estadísticas...</p>
+  if (!stats) return <p className="panel-empty">No se pudieron cargar las estadísticas.</p>
+
+  const maxVotos = stats.restaurantes.length > 0
+    ? Math.max(...stats.restaurantes.map(r => r.votos))
+    : 0
+
+  const getMedalla = (i) => {
+    if (i === 0) return '🥇'
+    if (i === 1) return '🥈'
+    if (i === 2) return '🥉'
+    return `#${i + 1}`
+  }
+
+  return (
+    <div className="stats-section">
+      <div className="stats-header">
+        <div className="stats-header__left">
+          <h3 className="stats-title">Estadísticas en tiempo real</h3>
+          <span className="stats-total">{stats.total_votos} votos totales</span>
+        </div>
+        <div className="stats-header__right">
+          <button
+            className={`stats-toggle-btn ${pausado ? 'stats-toggle-btn--paused' : ''}`}
+            onClick={() => setPausado(p => !p)}
+          >
+            {pausado ? '▶ Reanudar' : '⏸ Pausar'}
+          </button>
+          {ultimaAct && (
+            <span className="stats-timestamp">
+              {pausado ? '⏸' : '🟢'} {ultimaAct.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {stats.restaurantes.length === 0 ? (
+        <p className="panel-empty">No hay restaurantes registrados.</p>
+      ) : (
+        <div className="stats-ranking">
+          {stats.restaurantes.map((r, i) => (
+            <div
+              key={r.id}
+              className={`stats-row ${i === 0 && r.votos > 0 ? 'stats-row--leader' : ''}`}
+              style={{ animationDelay: `${i * 0.05}s` }}
+            >
+              <span className="stats-row__pos">{getMedalla(i)}</span>
+
+              {r.plato_imagen ? (
+                <img src={r.plato_imagen} alt={r.plato_nombre} className="stats-row__img" />
+              ) : (
+                <div className="stats-row__img stats-row__img--empty">🍽</div>
+              )}
+
+              <div className="stats-row__info">
+                <div className="stats-row__top">
+                  <span className="stats-row__nombre">{r.nombre}</span>
+                  <span className="stats-row__votos">
+                    {r.votos} {r.votos === 1 ? 'voto' : 'votos'}
+                  </span>
+                </div>
+                {r.plato_nombre && (
+                  <span className="stats-row__plato">{r.plato_nombre}</span>
+                )}
+                <div className="stats-bar">
+                  <div
+                    className="stats-bar__fill"
+                    style={{ width: maxVotos > 0 ? `${(r.votos / maxVotos) * 100}%` : '0%' }}
+                  />
+                </div>
+              </div>
+
+              <span className="stats-row__pct">{r.porcentaje}%</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminPanel() {
   const { adminSession, logoutAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [mensajeExito, setMensajeExito] = useState(null)
+  const [mostrarStats, setMostrarStats] = useState(true)
 
   useEffect(() => {
     if (!adminSession) navigate('/')
@@ -201,10 +319,20 @@ export default function AdminPanel() {
           <Link to="/admin/papelera" className="panel-accion-btn">
             Papelera
           </Link>
+          <button
+            className={`panel-accion-btn ${mostrarStats ? 'panel-accion-btn--active' : ''}`}
+            onClick={() => setMostrarStats(p => !p)}
+          >
+            📊 Estadísticas
+          </button>
         </div>
 
         {mensajeExito && (
           <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
+        )}
+
+        {mostrarStats && (
+          <EstadisticasVotos token={adminSession.token} />
         )}
 
         <h3 className="panel-section-title">Participantes registrados</h3>
