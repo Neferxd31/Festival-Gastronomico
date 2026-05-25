@@ -7,6 +7,8 @@ export default function ParticipanteDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+
+  const [festivalAbierto, setFestivalAbierto] = useState(null);
   const [restaurante, setRestaurante] = useState(null);
   const [comentarios, setComentarios] = useState([]);
   const [nuevoComentario, setNuevoComentario] = useState("");
@@ -15,6 +17,7 @@ export default function ParticipanteDetalle() {
   const [user, setUser] = useState(null);
   const [votado, setVotado] = useState(false);
   const [enviandoComentario, setEnviandoComentario] = useState(false);
+  
 
   const [cedula, setCedula] = useState("");
   const [editandoCedula, setEditandoCedula] = useState(false);
@@ -34,6 +37,14 @@ export default function ParticipanteDetalle() {
       }
     }
   }, []);
+
+  // Cargar estado del festival (abierto o cerrado)
+useEffect(() => {
+  fetch('http://127.0.0.1:8000/api/festivales/activo/')
+    .then(res => res.ok ? res.json() : null)
+    .then(data => setFestivalAbierto(data ? data.estado === 'ABIERTO' : false))
+    .catch(() => setFestivalAbierto(false));
+}, []);
 
   // Cargar datos del restaurante y sus comentarios
   useEffect(() => {
@@ -435,98 +446,115 @@ export default function ParticipanteDetalle() {
         {/* SIDEBAR */}
         <aside className="det-aside">
           {/* Botón de voto */}
-          <div className="det-vote-box">
-            {votado ? (
-              <div className="det-vote-box__confirmado">
-                <span>✅</span>
-                {votoEnEste ? (
-                  <>
-                    <p>¡Ya votaste por este restaurante!</p>
-                    {cedula && (
-                      <small>
-                        Cédula con la que votaste: <strong>{cedula}</strong>
-                      </small>
-                    )}
-                    <small>Gracias por participar</small>
-                    <button
-                      className="det-vote-btn det-vote-btn--eliminar"
-                      onClick={handleEliminarVoto}
-                    >
-                      Eliminar mi voto
-                    </button>
-                  </>
-                ) : (
-                  <p>
-                    Ya usaste tu voto en otro restaurante. Solo se permite votar
-                    por uno.
-                  </p>
-                )}
-              </div>
-            ) : user ? (
-              <>
-                <p className="det-vote-box__label">
-                  ¿Es tu favorito? ¡Dale tu voto!
-                </p>
-                {mostrarCedula ? (
-                  <div className="det-cedula-box">
-                    <label className="det-cedula-box__label">
-                      {user.has_cedula
-                        ? "Confirma tu cédula:"
-                        : "Ingresa tu cédula:"}
-                    </label>
-                    {user.has_cedula && !editandoCedula ? (
-                      <>
-                        <p className="det-cedula-box__numero">{cedula}</p>
-                        <button
-                          className="det-cedula-box__editar"
-                          onClick={() => setEditandoCedula(true)}
-                        >
-                          Editar cédula
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <input
-                          type="text"
-                          className="det-cedula-box__input"
-                          placeholder="Ej: 1234567890"
-                          value={cedula}
-                          onChange={(e) => setCedula(e.target.value)}
-                        />
-                        {user.has_cedula && (
-                          <button
-                            className="det-cedula-box__editar"
-                            onClick={() => setEditandoCedula(false)}
-                          >
-                            Cancelar
-                          </button>
-                        )}
-                      </>
-                    )}
-                    <button className="det-vote-btn" onClick={handleVotar}>
-                      Confirmar y votar
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className="det-vote-btn"
-                    onClick={() => setMostrarCedula(true)}
-                  >
-                    Votar por {restaurante.nombre}
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                <p className="det-vote-box__label">
-                  Inicia sesión para votar por este restaurante
-                </p>
-                <button className="det-vote-btn" onClick={handleVotar}>
-                  Iniciar sesión para votar
+          {/* Botón de voto */}
+<div className="det-vote-box">
+
+  {/* Festival cerrado: bloquea todo, sea cual sea el estado del usuario */}
+  {festivalAbierto === false ? (
+    <div className="det-vote-box__cerrado">
+      <span className="det-vote-box__cerrado-icono">🔴</span>
+      <p className="det-vote-box__cerrado-titulo">Votaciones cerradas</p>
+      <p className="det-vote-box__cerrado-texto">
+        El festival no se encuentra activo en este momento.
+        Las votaciones estarán disponibles cuando el festival abra.
+      </p>
+    </div>
+
+  ) : festivalAbierto === null ? (
+    // Mientras se carga el estado del festival, no mostramos nada para evitar un flash
+    <p className="det-vote-box__label">Verificando estado del festival...</p>
+
+  ) : votado ? (
+    <div className="det-vote-box__confirmado">
+      <span>✅</span>
+      {votoEnEste ? (
+        <>
+          <p>¡Ya votaste por este restaurante!</p>
+          {cedula && (
+            <small>
+              Cédula con la que votaste: <strong>{cedula}</strong>
+            </small>
+          )}
+          <small>Gracias por participar</small>
+          <button
+            className="det-vote-btn det-vote-btn--eliminar"
+            onClick={handleEliminarVoto}
+          >
+            Eliminar mi voto
+          </button>
+        </>
+      ) : (
+        <p>
+          Ya usaste tu voto en otro restaurante. Solo se permite votar
+          por uno.
+        </p>
+      )}
+    </div>
+
+  ) : user ? (
+    <>
+      <p className="det-vote-box__label">
+        ¿Es tu favorito? ¡Dale tu voto!
+      </p>
+      {mostrarCedula ? (
+        <div className="det-cedula-box">
+          <label className="det-cedula-box__label">
+            {user.has_cedula ? 'Confirma tu cédula:' : 'Ingresa tu cédula:'}
+          </label>
+          {user.has_cedula && !editandoCedula ? (
+            <>
+              <p className="det-cedula-box__numero">{cedula}</p>
+              <button
+                className="det-cedula-box__editar"
+                onClick={() => setEditandoCedula(true)}
+              >
+                Editar cédula
+              </button>
+            </>
+          ) : (
+            <>
+              <input
+                type="text"
+                className="det-cedula-box__input"
+                placeholder="Ej: 1234567890"
+                value={cedula}
+                onChange={(e) => setCedula(e.target.value)}
+              />
+              {user.has_cedula && (
+                <button
+                  className="det-cedula-box__editar"
+                  onClick={() => setEditandoCedula(false)}
+                >
+                  Cancelar
                 </button>
-              </>
-            )}
-          </div>
+              )}
+            </>
+          )}
+          <button className="det-vote-btn" onClick={handleVotar}>
+            Confirmar y votar
+          </button>
+        </div>
+      ) : (
+        <button
+          className="det-vote-btn"
+          onClick={() => setMostrarCedula(true)}
+        >
+          Votar por {restaurante.nombre}
+        </button>
+      )}
+    </>
+
+  ) : (
+    <>
+      <p className="det-vote-box__label">
+        Inicia sesión para votar por este restaurante
+      </p>
+      <button className="det-vote-btn" onClick={handleVotar}>
+        Iniciar sesión para votar
+      </button>
+    </>
+  )}
+</div>
 
           {/* Info de contacto */}
           <div className="det-info-box">

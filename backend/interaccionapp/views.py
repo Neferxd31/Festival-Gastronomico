@@ -4,6 +4,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from usuarioapp.authentication import VotanteJWTAuthentication
+from festivalapp.models import Festival
 from usuarioapp.models import Votante
 from restauranteapp.models import Restaurante
 from .models import Comentario, Voto
@@ -48,11 +49,24 @@ def eliminar_comentario(request, comentario_id):
 
 # ──────────────── VOTOS ────────────────
 
+def _get_festival_activo():
+    """Retorna el festival más reciente o None."""
+    return Festival.objects.order_by('-created_at').first()
+
+
 @api_view(['POST'])
 @authentication_classes([VotanteJWTAuthentication])
 @permission_classes([])
 def votar_restaurante(request, restaurante_id):
     usuario = request.user
+
+    # ── Verificar que el festival esté abierto ──
+    festival = _get_festival_activo()
+    if not festival or festival.estado != Festival.EstadoChoices.ABIERTO:
+        return Response(
+            {"detail": "Las votaciones están cerradas. El festival no se encuentra activo."},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     try:
         votante = Votante.objects.get(usuario=usuario)
@@ -92,6 +106,14 @@ def votar_restaurante(request, restaurante_id):
 @permission_classes([])
 def eliminar_voto(request, restaurante_id):
     usuario = request.user
+
+    # ── Verificar que el festival esté abierto ──
+    festival = _get_festival_activo()
+    if not festival or festival.estado != Festival.EstadoChoices.ABIERTO:
+        return Response(
+            {"detail": "Las votaciones están cerradas. No es posible modificar votos."},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     try:
         votante = Votante.objects.get(usuario=usuario)
