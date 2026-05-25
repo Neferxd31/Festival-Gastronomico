@@ -718,3 +718,31 @@
   from { opacity: 0; transform: translate(-50%, -60%); }
   to   { opacity: 1; transform: translate(-50%, -50%); }
 }
+
+/* ── Festival cerrado ── */
+.det-vote-box__cerrado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.det-vote-box__cerrado-icono {
+  font-size: 2rem;
+}
+
+.det-vote-box__cerrado-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 0;
+}
+
+.det-vote-box__cerrado-texto {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
