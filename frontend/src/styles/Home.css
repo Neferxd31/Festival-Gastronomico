@@ -692,3 +692,68 @@
   .home-cards { grid-template-columns: 1fr; }
   .home-footer__inner { flex-direction: column; gap: 20px; padding: 30px 20px; }
 }
+
+/* RESULTADOS PREVIEW */
+.home-resultados {
+  padding: 64px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+.home-resultados h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.home-podio-preview {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 32px 0 24px;
+  flex-wrap: wrap;
+}
+
+.home-podio-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-decoration: none;
+  color: #fff;
+  width: 180px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.home-podio-card:hover { transform: translateY(-4px); border-color: #f5c518; }
+.home-podio-card--1 {
+  border-color: #f5c518;
+  box-shadow: 0 0 20px rgba(245,197,24,0.15);
+  transform: scale(1.05);
+}
+.home-podio-card__medalla { font-size: 32px; margin-bottom: 10px; }
+.home-podio-card__img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #2a2a2a;
+  margin-bottom: 10px;
+}
+.home-podio-card__img--vacia {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #222;
+  border: 2px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+.home-podio-card h4 { font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+.home-podio-card__votos { font-size: 12px; color: #f5c518; font-weight: 600; }
