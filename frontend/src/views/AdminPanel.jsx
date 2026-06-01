@@ -4,43 +4,32 @@ import { useAuth } from '../context/AuthContext'
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal'
 import SuccessDeleteModal from '../components/modals/SuccessDeleteModal'
 import ConfirmToggleModal from '../components/modals/ConfirmToggleModal'
-import ConfirmEstadoFestivalModal from '../components/modals/ConfirmEstadoFestivalModal' // nuevo
+import ConfirmEstadoFestivalModal from '../components/modals/ConfirmEstadoFestivalModal'
+import festivalLogo from '../assets/festival_logo.png'
+import ufpsLogo from '../assets/ufps_logo.png'
 import '../styles/AdminPanel.css'
 
 // ─────────────────────────────────────────────
-// Componente: Estado del Festival
+// Componente: Estado del Festival (sincronizado)
 // ─────────────────────────────────────────────
-function EstadoFestival({ token }) {
-  const [festival, setFestival]       = useState(null)
-  const [cargando, setCargando]       = useState(true)
-  const [guardando, setGuardando]     = useState(false)
-  const [error, setError]             = useState(null)
-  const [mensaje, setMensaje]         = useState(null)
+function EstadoFestivalSincronizado({ token, onEstadoCambiado }) {
+  const [festival, setFestival]         = useState(null)
+  const [cargando, setCargando]         = useState(true)
+  const [guardando, setGuardando]       = useState(false)
+  const [error, setError]               = useState(null)
+  const [mensaje, setMensaje]           = useState(null)
   const [modalAbierto, setModalAbierto] = useState(false)
-  const [nuevoEstado, setNuevoEstado] = useState(null)
+  const [nuevoEstado, setNuevoEstado]   = useState(null)
 
-  const cargarFestival = useCallback(async () => {
-    setCargando(true)
-    setError(null)
-    try {
-      const res = await fetch('http://127.0.0.1:8000/api/festivales/activo/')
-      if (!res.ok) throw new Error('No se pudo cargar el festival.')
-      const data = await res.json()
-      setFestival(data)
-    } catch {
-      setError('Error al cargar el estado del festival.')
-    } finally {
-      setCargando(false)
-    }
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/festivales/activo/')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data) setFestival(data) })
+      .catch(() => setError('Error al cargar el festival.'))
+      .finally(() => setCargando(false))
   }, [])
 
-  useEffect(() => { cargarFestival() }, [cargarFestival])
-
-  // Abre el modal de confirmación antes de cambiar
-  const solicitarCambio = (estado) => {
-    setNuevoEstado(estado)
-    setModalAbierto(true)
-  }
+  const solicitarCambio = (estado) => { setNuevoEstado(estado); setModalAbierto(true) }
 
   const confirmarCambio = async () => {
     if (!festival || !nuevoEstado) return
@@ -48,32 +37,25 @@ function EstadoFestival({ token }) {
     setGuardando(true)
     setError(null)
     setMensaje(null)
-
     try {
       const res = await fetch(
         `http://127.0.0.1:8000/api/festivales/${festival.id}/estado/`,
         {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ estado: nuevoEstado }),
         }
       )
-
       if (!res.ok) {
-        // Escenario 5: error del servidor, no se aplica cambio
         const errData = await res.json().catch(() => ({}))
         throw new Error(errData.error || 'Error al guardar el estado.')
       }
-
       const data = await res.json()
       setFestival(prev => ({ ...prev, estado: data.estado }))
+      onEstadoCambiado(data.estado === 'ABIERTO')
       setMensaje(data.mensaje)
       setTimeout(() => setMensaje(null), 4000)
     } catch (err) {
-      // Escenario 5: mostramos error, el estado local NO cambia
       setError(err.message || 'Ocurrió un error inesperado.')
     } finally {
       setGuardando(false)
@@ -81,14 +63,40 @@ function EstadoFestival({ token }) {
     }
   }
 
-  if (cargando) return <div className="festival-estado-card">Cargando estado del festival...</div>
+  if (cargando) return <div className="festival-estado-card festival-estado-card--loading">Cargando estado del festival...</div>
 
   const estaAbierto = festival?.estado === 'ABIERTO'
 
   return (
-    <div className="festival-estado-card">
-      <div className="festival-estado-card__header">
-        <h3 className="festival-estado-card__titulo">Estado del Festival</h3>
+    <div className={`festival-estado-card ${estaAbierto ? 'festival-estado-card--abierto' : 'festival-estado-card--cerrado'}`}>
+      <div className="festival-estado-card__row">
+        <div className="festival-estado-dot" />
+        <div className="festival-estado-card__texto">
+          <h3 className="festival-estado-card__titulo">Estado del Festival</h3>
+          {festival && <p className="festival-estado-card__nombre">{festival.nombre}</p>}
+        </div>
+
+        {festival && (
+          <div className="festival-estado-card__acciones">
+            <button
+              className="festival-btn festival-btn--abrir"
+              onClick={() => solicitarCambio('ABIERTO')}
+              disabled={guardando || estaAbierto}
+            >
+              {guardando && nuevoEstado === 'ABIERTO' ? 'Guardando...' : '▶ Abrir'}
+            </button>
+            <button
+              className="festival-btn festival-btn--cerrar"
+              onClick={() => solicitarCambio('CERRADO')}
+              disabled={guardando || !estaAbierto}
+            >
+              {guardando && nuevoEstado === 'CERRADO' ? 'Guardando...' : '■ Cerrar'}
+            </button>
+          </div>
+        )}
+
+        <div className="festival-estado-card__spacer" />
+
         {festival && (
           <span className={`festival-badge ${estaAbierto ? 'festival-badge--abierto' : 'festival-badge--cerrado'}`}>
             {estaAbierto ? '🟢 Abierto' : '🔴 Cerrado'}
@@ -96,41 +104,9 @@ function EstadoFestival({ token }) {
         )}
       </div>
 
-      {festival && (
-        <p className="festival-estado-card__nombre">
-          <strong>{festival.nombre}</strong>
-        </p>
-      )}
-
-      {/* Escenario 5: error visible sin cambio aplicado */}
-      {error && <p className="festival-estado-card__error">⚠️ {error}</p>}
-
-      {/* Escenarios 1 y 2: mensaje de éxito */}
+      {error   && <p className="festival-estado-card__error">⚠️ {error}</p>}
       {mensaje && <p className="festival-estado-card__exito">✅ {mensaje}</p>}
 
-      {festival && (
-        <div className="festival-estado-card__acciones">
-          <button
-            className="festival-btn festival-btn--abrir"
-            onClick={() => solicitarCambio('ABIERTO')}
-            disabled={guardando || estaAbierto}
-            title={estaAbierto ? 'El festival ya está abierto' : 'Abrir festival'}
-          >
-            {guardando && nuevoEstado === 'ABIERTO' ? 'Guardando...' : 'Abrir festival'}
-          </button>
-
-          <button
-            className="festival-btn festival-btn--cerrar"
-            onClick={() => solicitarCambio('CERRADO')}
-            disabled={guardando || !estaAbierto}
-            title={!estaAbierto ? 'El festival ya está cerrado' : 'Cerrar festival'}
-          >
-            {guardando && nuevoEstado === 'CERRADO' ? 'Guardando...' : 'Cerrar festival'}
-          </button>
-        </div>
-      )}
-
-      {/* Modal de confirmación (Escenarios 1 y 2) */}
       <ConfirmEstadoFestivalModal
         abierto={modalAbierto}
         nuevoEstado={nuevoEstado}
@@ -143,7 +119,6 @@ function EstadoFestival({ token }) {
 
 // ─────────────────────────────────────────────
 // Componente: Grid de participantes
-// festivalAbierto: bool — controla si las acciones están disponibles
 // ─────────────────────────────────────────────
 function GridParticipantes({ token, festivalAbierto }) {
   const { logoutAdmin } = useAuth()
@@ -177,10 +152,7 @@ function GridParticipantes({ token, festivalAbierto }) {
 
   useEffect(() => { cargar() }, [cargar])
 
-  const abrirModalToggle = (r) => {
-    setRestauranteToggle(r)
-    setModalToggle(true)
-  }
+  const abrirModalToggle = (r) => { setRestauranteToggle(r); setModalToggle(true) }
 
   const ejecutarToggle = async () => {
     if (!restauranteToggle) return
@@ -199,10 +171,7 @@ function GridParticipantes({ token, festivalAbierto }) {
         )
       }
     } catch { /* silencioso */ }
-    finally {
-      setToggling(null)
-      setRestauranteToggle(null)
-    }
+    finally { setToggling(null); setRestauranteToggle(null) }
   }
 
   const eliminarParticipante = async () => {
@@ -216,22 +185,22 @@ function GridParticipantes({ token, festivalAbierto }) {
         setModalDelete(false)
         setModalDeleteSuccess(true)
       }
-    } catch (err) {
-      console.error(err)
-    }
+    } catch (err) { console.error(err) }
   }
 
   if (cargando) return <p className="panel-empty">Cargando participantes...</p>
   if (error)    return <p className="login-error">{error}</p>
-  if (restaurantes.length === 0) return <p className="panel-empty">Aún no hay participantes registrados.</p>
+  if (restaurantes.length === 0) return (
+    <div className="panel-empty-state">
+      <span className="panel-empty-state__icon">🍽</span>
+      <p>Aún no hay participantes registrados.</p>
+    </div>
+  )
 
-  // Cuando el festival está cerrado, las acciones de edición se bloquean
   const accionesDeshabilitadas = !festivalAbierto
 
   return (
     <div className="panel-tabla-wrap">
-
-      {/* Aviso visible cuando el festival está cerrado */}
       {accionesDeshabilitadas && (
         <div className="panel-aviso-cerrado">
           🔒 El festival está <strong>cerrado</strong>. Las acciones de edición, habilitación
@@ -242,13 +211,11 @@ function GridParticipantes({ token, festivalAbierto }) {
       <div className="panel-grid">
         {restaurantes.map(r => (
           <div key={r.id} className={`panel-card ${accionesDeshabilitadas ? 'panel-card--bloqueado' : ''}`}>
-
             {r.plato?.imagen_url ? (
               <img src={r.plato.imagen_url} alt={r.plato.nombre} className="panel-card__img" />
             ) : (
               <div className="panel-card__img--empty">🍽</div>
             )}
-
             <div className="panel-card__body">
               <h3 className="panel-card__nombre">{r.nombre}</h3>
               <span className="panel-card__plato">{r.plato?.nombre || 'Sin plato'}</span>
@@ -256,31 +223,25 @@ function GridParticipantes({ token, festivalAbierto }) {
                 {r.habilitado ? 'Habilitado' : 'Deshabilitado'}
               </span>
             </div>
-
             <div className="panel-card__actions">
               <button
                 className={`panel-card__btn ${r.habilitado ? 'panel-card__btn--deshabilitar' : 'panel-card__btn--habilitar'}`}
                 onClick={() => abrirModalToggle(r)}
                 disabled={toggling === r.id || accionesDeshabilitadas}
-                title={accionesDeshabilitadas ? 'No disponible con el festival cerrado' : ''}
               >
                 {toggling === r.id ? '...' : r.habilitado ? 'Deshabilitar' : 'Habilitar'}
               </button>
-
               <button
                 className="panel-card__btn panel-card__btn--editar"
                 onClick={() => navigate(`/admin/editar-participante/${r.id}`, { state: { restaurante: r } })}
                 disabled={accionesDeshabilitadas}
-                title={accionesDeshabilitadas ? 'No disponible con el festival cerrado' : ''}
               >
                 Editar
               </button>
-
               <button
                 className="panel-card__btn panel-card__btn--eliminar"
                 onClick={() => { setSeleccionado(r); setModalDelete(true) }}
                 disabled={accionesDeshabilitadas}
-                title={accionesDeshabilitadas ? 'No disponible con el festival cerrado' : ''}
               >
                 Eliminar
               </button>
@@ -309,8 +270,9 @@ function GridParticipantes({ token, festivalAbierto }) {
   )
 }
 
-// (EstadisticasVotos permanece igual que antes, sin cambios)
-
+// ─────────────────────────────────────────────
+// Componente: Estadísticas en tiempo real
+// ─────────────────────────────────────────────
 function EstadisticasVotos({ token }) {
   const { logoutAdmin } = useAuth()
   const navigate = useNavigate()
@@ -334,9 +296,7 @@ function EstadisticasVotos({ token }) {
     finally { setCargando(false) }
   }, [token, logoutAdmin, navigate])
 
-  useEffect(() => {
-    fetchStats()
-  }, [fetchStats])
+  useEffect(() => { fetchStats() }, [fetchStats])
 
   useEffect(() => {
     if (pausado) {
@@ -348,7 +308,7 @@ function EstadisticasVotos({ token }) {
   }, [pausado, fetchStats])
 
   if (cargando) return <p className="panel-empty">Cargando estadísticas...</p>
-  if (!stats) return <p className="panel-empty">No se pudieron cargar las estadísticas.</p>
+  if (!stats)   return <p className="panel-empty">No se pudieron cargar las estadísticas.</p>
 
   const maxVotos = stats.restaurantes.length > 0
     ? Math.max(...stats.restaurantes.map(r => r.votos))
@@ -384,7 +344,7 @@ function EstadisticasVotos({ token }) {
       </div>
 
       {stats.restaurantes.length === 0 ? (
-        <p className="panel-empty">No hay restaurantes registrados.</p>
+        <p className="panel-empty" style={{ color: '#666' }}>No hay restaurantes registrados.</p>
       ) : (
         <div className="stats-ranking">
           {stats.restaurantes.map((r, i) => (
@@ -394,13 +354,11 @@ function EstadisticasVotos({ token }) {
               style={{ animationDelay: `${i * 0.05}s` }}
             >
               <span className="stats-row__pos">{getMedalla(i)}</span>
-
               {r.plato_imagen ? (
                 <img src={r.plato_imagen} alt={r.plato_nombre} className="stats-row__img" />
               ) : (
                 <div className="stats-row__img stats-row__img--empty">🍽</div>
               )}
-
               <div className="stats-row__info">
                 <div className="stats-row__top">
                   <span className="stats-row__nombre">{r.nombre}</span>
@@ -408,9 +366,7 @@ function EstadisticasVotos({ token }) {
                     {r.votos} {r.votos === 1 ? 'voto' : 'votos'}
                   </span>
                 </div>
-                {r.plato_nombre && (
-                  <span className="stats-row__plato">{r.plato_nombre}</span>
-                )}
+                {r.plato_nombre && <span className="stats-row__plato">{r.plato_nombre}</span>}
                 <div className="stats-bar">
                   <div
                     className="stats-bar__fill"
@@ -418,7 +374,6 @@ function EstadisticasVotos({ token }) {
                   />
                 </div>
               </div>
-
               <span className="stats-row__pct">{r.porcentaje}%</span>
             </div>
           ))}
@@ -429,29 +384,24 @@ function EstadisticasVotos({ token }) {
 }
 
 // ─────────────────────────────────────────────
-// Página principal: AdminPanel
+// Página principal: AdminPanel con tabs
 // ─────────────────────────────────────────────
 export default function AdminPanel() {
   const { adminSession, logoutAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [mensajeExito, setMensajeExito] = useState(null)
-  const [mostrarStats, setMostrarStats] = useState(true)
-
-  // Estado del festival para pasarlo a GridParticipantes
+  const [tabActiva, setTabActiva] = useState('participantes')
   const [festivalAbierto, setFestivalAbierto] = useState(null)
 
   useEffect(() => {
     if (!adminSession) navigate('/')
   }, [adminSession, navigate])
 
-  // Carga el estado del festival al montar (Escenario 4: persistencia)
   useEffect(() => {
     fetch('http://127.0.0.1:8000/api/festivales/activo/')
       .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data) setFestivalAbierto(data.estado === 'ABIERTO')
-      })
+      .then(data => { if (data) setFestivalAbierto(data.estado === 'ABIERTO') })
       .catch(() => {})
   }, [])
 
@@ -467,149 +417,104 @@ export default function AdminPanel() {
 
   return (
     <div className="panel-screen">
+
+      {/* ── HEADER ── */}
       <header className="panel-header">
-        <h1>Panel Administrador</h1>
+        <div className="panel-header__logos">
+          <img src={festivalLogo} alt="Festival Gastronómico Los Patios" className="panel-logo--festival" />
+        </div>
+
+        <div className="panel-header__center">
+          <span className="panel-header__badge">Panel Administrador</span>
+        </div>
+
         <div className="panel-user">
-          <span>{adminSession.usuario?.nombre}</span>
-          <button onClick={async () => { await logoutAdmin(); navigate('/') }} className="logout-btn">
+          <span className="panel-user__nombre">{adminSession.usuario?.nombre}</span>
+          <button
+            onClick={async () => { await logoutAdmin(); navigate('/') }}
+            className="logout-btn"
+          >
             Cerrar sesión
           </button>
         </div>
       </header>
 
       <main className="panel-main">
-        <div className="panel-acciones">
-          {/* El botón de crear participante también se deshabilita si el festival está cerrado */}
-          {festivalAbierto
-            ? <Link to="/admin/crear-participante" className="panel-accion-btn">+ Crear participante</Link>
-            : <span className="panel-accion-btn panel-accion-btn--disabled" title="Festival cerrado">+ Crear participante</span>
-          }
-          <Link to="/admin/papelera" className="panel-accion-btn">Papelera</Link>
+
+        {/* ── ESTADO DEL FESTIVAL — siempre visible ── */}
+        <div className="panel-estado-wrapper">
+          <EstadoFestivalSincronizado
+            token={adminSession.token}
+            onEstadoCambiado={setFestivalAbierto}
+          />
+        </div>
+
+        {/* ── MENSAJE ÉXITO ── */}
+        {mensajeExito && (
+          <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
+        )}
+
+        {/* ── TABS ── */}
+        <div className="panel-tabs">
           <button
-            className={`panel-accion-btn ${mostrarStats ? 'panel-accion-btn--active' : ''}`}
-            onClick={() => setMostrarStats(p => !p)}
+            className={`panel-tab ${tabActiva === 'participantes' ? 'panel-tab--active' : ''}`}
+            onClick={() => setTabActiva('participantes')}
+          >
+            👥 Participantes
+          </button>
+          <button
+            className={`panel-tab ${tabActiva === 'estadisticas' ? 'panel-tab--active' : ''}`}
+            onClick={() => setTabActiva('estadisticas')}
           >
             📊 Estadísticas
           </button>
         </div>
 
-        {mensajeExito && (
-          <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
+        {/* ── CONTENIDO TAB PARTICIPANTES ── */}
+        {tabActiva === 'participantes' && (
+          <div className="panel-tab-content">
+            <div className="panel-acciones">
+              {festivalAbierto
+                ? <Link to="/admin/crear-participante" className="panel-accion-btn">+ Crear participante</Link>
+                : <span className="panel-accion-btn panel-accion-btn--disabled" title="Festival cerrado">+ Crear participante</span>
+              }
+              <Link to="/admin/papelera" className="panel-accion-btn panel-accion-btn--secondary">🗑 Papelera</Link>
+            </div>
+
+            <h3 className="panel-section-title">Participantes registrados</h3>
+            <GridParticipantes
+              token={adminSession.token}
+              festivalAbierto={festivalAbierto}
+            />
+          </div>
         )}
 
-        {/* Sección de estado del festival — pasa setFestivalAbierto para sincronizar */}
-        <EstadoFestivalSincronizado
-          token={adminSession.token}
-          onEstadoCambiado={setFestivalAbierto}
-        />
+        {/* ── CONTENIDO TAB ESTADÍSTICAS ── */}
+        {tabActiva === 'estadisticas' && (
+          <div className="panel-tab-content">
+            <EstadisticasVotos token={adminSession.token} />
+          </div>
+        )}
 
-        {mostrarStats && <EstadisticasVotos token={adminSession.token} />}
-
-        <h3 className="panel-section-title">Participantes registrados</h3>
-        <GridParticipantes
-          token={adminSession.token}
-          festivalAbierto={festivalAbierto}
-        />
       </main>
-    </div>
-  )
-}
 
-// Wrapper que sincroniza el estado con el AdminPanel padre
-function EstadoFestivalSincronizado({ token, onEstadoCambiado }) {
-  // Re-exporta EstadoFestival notificando al padre cuando cambia
-  const [festival, setFestival]         = useState(null)
-  const [cargando, setCargando]         = useState(true)
-  const [guardando, setGuardando]       = useState(false)
-  const [error, setError]               = useState(null)
-  const [mensaje, setMensaje]           = useState(null)
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const [nuevoEstado, setNuevoEstado]   = useState(null)
+      {/* ── FOOTER ── */}
+      <footer className="panel-footer">
+        <div className="panel-footer__inner">
+          <div className="panel-footer__colaboradores">
 
-  useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/festivales/activo/')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data) setFestival(data) })
-      .catch(() => setError('Error al cargar el festival.'))
-      .finally(() => setCargando(false))
-  }, [])
+            <div className="panel-footer__org">
+              <img src={ufpsLogo} alt="UFPS" className="panel-footer__logo" />
+            </div>
 
-  const solicitarCambio = (estado) => { setNuevoEstado(estado); setModalAbierto(true) }
-
-  const confirmarCambio = async () => {
-    if (!festival || !nuevoEstado) return
-    setModalAbierto(false)
-    setGuardando(true)
-    setError(null)
-    setMensaje(null)
-
-    try {
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/festivales/${festival.id}/estado/`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ estado: nuevoEstado }),
-        }
-      )
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Error al guardar el estado.')
-      }
-      const data = await res.json()
-      setFestival(prev => ({ ...prev, estado: data.estado }))
-      onEstadoCambiado(data.estado === 'ABIERTO')  // sincroniza con el padre
-      setMensaje(data.mensaje)
-      setTimeout(() => setMensaje(null), 4000)
-    } catch (err) {
-      setError(err.message || 'Ocurrió un error inesperado.')
-    } finally {
-      setGuardando(false)
-      setNuevoEstado(null)
-    }
-  }
-
-  if (cargando) return <div className="festival-estado-card">Cargando estado del festival...</div>
-
-  const estaAbierto = festival?.estado === 'ABIERTO'
-
-  return (
-    <div className="festival-estado-card">
-      <div className="festival-estado-card__header">
-        <h3 className="festival-estado-card__titulo">Estado del Festival</h3>
-        {festival && (
-          <span className={`festival-badge ${estaAbierto ? 'festival-badge--abierto' : 'festival-badge--cerrado'}`}>
-            {estaAbierto ? '🟢 Abierto' : '🔴 Cerrado'}
-          </span>
-        )}
-      </div>
-      {festival && <p className="festival-estado-card__nombre"><strong>{festival.nombre}</strong></p>}
-      {error   && <p className="festival-estado-card__error">⚠️ {error}</p>}
-      {mensaje && <p className="festival-estado-card__exito">✅ {mensaje}</p>}
-      {festival && (
-        <div className="festival-estado-card__acciones">
-          <button
-            className="festival-btn festival-btn--abrir"
-            onClick={() => solicitarCambio('ABIERTO')}
-            disabled={guardando || estaAbierto}
-          >
-            {guardando && nuevoEstado === 'ABIERTO' ? 'Guardando...' : 'Abrir festival'}
-          </button>
-          <button
-            className="festival-btn festival-btn--cerrar"
-            onClick={() => solicitarCambio('CERRADO')}
-            disabled={guardando || !estaAbierto}
-          >
-            {guardando && nuevoEstado === 'CERRADO' ? 'Guardando...' : 'Cerrar festival'}
-          </button>
+            <div className="panel-footer__org">
+              <img src={festivalLogo} alt="Festival Gastronómico Los Patios" className="panel-footer__logo" />
+            </div>
+          </div>
+          <p className="panel-footer__copy">© {new Date().getFullYear()} Festival Gastronómico Los Patios</p>
         </div>
-      )}
-      <ConfirmEstadoFestivalModal
-        abierto={modalAbierto}
-        nuevoEstado={nuevoEstado}
-        onCancelar={() => { setModalAbierto(false); setNuevoEstado(null) }}
-        onConfirmar={confirmarCambio}
-      />
+      </footer>
+
     </div>
   )
 }
