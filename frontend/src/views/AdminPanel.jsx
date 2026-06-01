@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import ExcelJS from 'exceljs'
+import { saveAs } from 'file-saver'
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal'
 import SuccessDeleteModal from '../components/modals/SuccessDeleteModal'
 import ConfirmToggleModal from '../components/modals/ConfirmToggleModal'
@@ -104,7 +106,7 @@ function EstadoFestivalSincronizado({ token, onEstadoCambiado }) {
         )}
       </div>
 
-      {error   && <p className="festival-estado-card__error">⚠️ {error}</p>}
+      {error    && <p className="festival-estado-card__error">⚠️ {error}</p>}
       {mensaje && <p className="festival-estado-card__exito">✅ {mensaje}</p>}
 
       <ConfirmEstadoFestivalModal
@@ -273,7 +275,7 @@ function GridParticipantes({ token, festivalAbierto }) {
 // ─────────────────────────────────────────────
 // Componente: Estadísticas en tiempo real
 // ─────────────────────────────────────────────
-function EstadisticasVotos({ token }) {
+function EstadisticasVotos({ token, festivalAbierto }) {
   const { logoutAdmin } = useAuth()
   const navigate = useNavigate()
 
@@ -307,6 +309,140 @@ function EstadisticasVotos({ token }) {
     return () => clearInterval(intervalRef.current)
   }, [pausado, fetchStats])
 
+  // Función estructurada para exportar los resultados finales a Excel destacando el podio
+  const generarReporteExcel = async () => {
+    if (!stats || stats.restaurantes.length === 0) {
+      alert("No hay datos disponibles para exportar.");
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Resultados Oficiales');
+
+    // Paleta vinotinto/roja gastronómica corporativa y colores específicos para las medallas
+    const colors = {
+      headerBg: 'FF991B1B',   // Red 800
+      headerText: 'FFFFFFFF',
+      zebraBg: 'FFF9FAFB',    // Gray 50
+      borderGrey: 'FFE5E7EB', // Gray 200
+      podiumOroBg: 'FFFFFBEB',    // Soft Yellow/Amber 50
+      podiumOroText: 'FF92400E',  // Dark Amber 800
+      podiumPlataBg: 'FFF8FAFC',  // Soft Slate 50
+      podiumPlataText: 'FF334155',// Dark Slate 700
+      podiumBronceBg: 'FFFFF1F2', // Soft Rose 50
+      podiumBronceText: 'FF9F1239'// Dark Rose 800
+    };
+
+    // Título Principal del Reporte
+    sheet.mergeCells('A1:E1');
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'REPORTE OFICIAL DE RESULTADOS - FESTIVAL GASTRONÓMICO';
+    titleCell.font = { bold: true, size: 15, color: { argb: 'FF111827' } };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.getRow(1).height = 35;
+
+    sheet.mergeCells('A2:E2');
+    const subtitleCell = sheet.getCell('A2');
+    subtitleCell.value = `Total general de votación: ${stats.total_votos} votos válidos`;
+    subtitleCell.font = { italic: true, size: 12, color: { argb: 'FF4B5563' } };
+    subtitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.getRow(2).height = 22;
+
+    sheet.addRow([]); // Fila vacía de separación
+
+    // Definición de Encabezados de la Tabla
+    const headers = ['Posición', 'Restaurante / Participante', 'Plato Presentado', 'Votos Recibidos', 'Porcentaje'];
+    const headerRow = sheet.addRow(headers);
+    headerRow.height = 28;
+    
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: colors.headerText }, size: 11 };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.headerBg } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = { bottom: { style: 'medium', color: { argb: 'FF7F1D1D' } } };
+    });
+
+    // Inserción de Datos Dinámicos con resaltado especial para el Podio (Top 3)
+    stats.restaurantes.forEach((r, index) => {
+      let posDisplay = index + 1;
+      let isPodium = index < 3;
+      let podiumStyle = {};
+
+      // Inyección de medallas y asignación de estilos según jerarquía
+      if (index === 0) {
+        posDisplay = '🥇 1';
+        podiumStyle = { bg: colors.podiumOroBg, text: colors.podiumOroText };
+      } else if (index === 1) {
+        posDisplay = '🥈 2';
+        podiumStyle = { bg: colors.podiumPlataBg, text: colors.podiumPlataText };
+      } else if (index === 2) {
+        posDisplay = '🥉 3';
+        podiumStyle = { bg: colors.podiumBronceBg, text: colors.podiumBronceText };
+      }
+
+      const row = sheet.addRow([
+        posDisplay,
+        r.nombre,
+        r.plato_nombre || 'Sin plato registrado',
+        r.votos,
+        (r.porcentaje / 100) // Se almacena numéricamente para dar formato porcentual nativo
+      ]);
+      
+      // Filas más estilizadas y amplias para destacar el top
+      row.height = isPodium ? 28 : 22;
+
+      row.eachCell((cell, colIndex) => {
+        cell.verticalAlignment = 'middle';
+
+        if (isPodium) {
+          // Formato decorativo para los primeros tres lugares
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: podiumStyle.bg } };
+          cell.font = { bold: true, color: { argb: podiumStyle.text }, size: index === 0 ? 12 : 11 };
+          
+          let bottomBorder = { style: 'thin', color: { argb: colors.borderGrey } };
+          if (index === 2) {
+            // Cierre visual del podio con una línea más marcada
+            bottomBorder = { style: 'medium', color: { argb: colors.headerBg } };
+          }
+          cell.border = { bottom: bottomBorder };
+        } else {
+          // Estilo minimalista / cebra para los demás participantes
+          cell.font = { size: 11, color: { argb: 'FF374151' } };
+          cell.border = { bottom: { style: 'thin', color: { argb: colors.borderGrey } } };
+          if (index % 2 !== 0) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.zebraBg } };
+          }
+        }
+
+        // Formateo y alineación por tipo de celda
+        if (colIndex === 1) cell.alignment = { horizontal: 'center' };
+        if (colIndex === 4) {
+          cell.alignment = { horizontal: 'right' };
+          cell.numFmt = '#,##0';
+        }
+        if (colIndex === 5) {
+          cell.alignment = { horizontal: 'right' };
+          cell.numFmt = '0.0%';
+        }
+      });
+    });
+
+    // Ajuste de anchos fijos y proporcionales para legibilidad inmediata
+    sheet.columns = [
+      { width: 14 }, // Posición
+      { width: 38 }, // Restaurante
+      { width: 38 }, // Plato
+      { width: 18 }, // Votos
+      { width: 16 }  // Porcentaje
+    ];
+
+    // Exportación del libro de trabajo
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const fechaSuffix = new Date().toISOString().slice(0, 10);
+    saveAs(blob, `Resultados_Finales_Festival_${fechaSuffix}.xlsx`);
+  };
+
   if (cargando) return <p className="panel-empty">Cargando estadísticas...</p>
   if (!stats)   return <p className="panel-empty">No se pudieron cargar las estadísticas.</p>
 
@@ -329,6 +465,22 @@ function EstadisticasVotos({ token }) {
           <span className="stats-total">{stats.total_votos} votos totales</span>
         </div>
         <div className="stats-header__right">
+          
+          {/* Botón contextual de descarga */}
+          <button
+            className="stats-toggle-btn"
+            onClick={generarReporteExcel}
+            style={{
+              marginRight: '12px',
+              backgroundColor: !festivalAbierto ? '#10b981' : '#6b7280',
+              color: '#ffffff',
+              borderColor: 'transparent'
+            }}
+            title={festivalAbierto ? 'Puedes exportar un parcial, pero se recomienda esperar al cierre' : 'Descargar reporte final homologado'}
+          >
+            {festivalAbierto ? '📥 Exportar Parcial' : '📥 Exportar Resultados Finales'}
+          </button>
+
           <button
             className={`stats-toggle-btn ${pausado ? 'stats-toggle-btn--paused' : ''}`}
             onClick={() => setPausado(p => !p)}
@@ -492,7 +644,10 @@ export default function AdminPanel() {
         {/* ── CONTENIDO TAB ESTADÍSTICAS ── */}
         {tabActiva === 'estadisticas' && (
           <div className="panel-tab-content">
-            <EstadisticasVotos token={adminSession.token} />
+            <EstadisticasVotos 
+              token={adminSession.token} 
+              festivalAbierto={festivalAbierto} 
+            />
           </div>
         )}
 
@@ -502,11 +657,9 @@ export default function AdminPanel() {
       <footer className="panel-footer">
         <div className="panel-footer__inner">
           <div className="panel-footer__colaboradores">
-
             <div className="panel-footer__org">
               <img src={ufpsLogo} alt="UFPS" className="panel-footer__logo" />
             </div>
-
             <div className="panel-footer__org">
               <img src={festivalLogo} alt="Festival Gastronómico Los Patios" className="panel-footer__logo" />
             </div>
