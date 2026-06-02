@@ -594,3 +594,8 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+.panel-mensaje-error {
+  background-color: #fef2f2;
+  border: 1px solid #e74c3c;
+  color: #dc2626;
+}
