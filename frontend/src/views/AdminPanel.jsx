@@ -307,6 +307,14 @@ export default function AdminPanel() {
     }
   }, [location.state])
 
+  // Cuando el estado cambia, si se abre el festival se resetean los resultados
+  const handleEstadoCambiado = (estaAbierto) => {
+    setFestivalAbierto(estaAbierto)
+    if (estaAbierto) {
+      setResultadosPublicados(false)
+    }
+  }
+
   const handlePublicarResultados = async () => {
     if (festivalAbierto) {
       setMensajePublicar({ texto: '⚠️ Debes cerrar el festival antes de publicar los resultados.', tipo: 'error' })
@@ -373,19 +381,27 @@ export default function AdminPanel() {
           <button
             className="panel-accion-btn"
             style={{
-              backgroundColor: festivalAbierto || resultadosPublicados ? '#888' : '#2ecc71',
+              backgroundColor: festivalAbierto
+                ? '#888'
+                : resultadosPublicados
+                  ? '#16a34a'
+                  : '#2ecc71',
               color: '#fff',
-              cursor: festivalAbierto || resultadosPublicados ? 'not-allowed' : 'pointer',
+              cursor: festivalAbierto ? 'not-allowed' : 'pointer',
             }}
             onClick={handlePublicarResultados}
-            disabled={publicando || festivalAbierto || resultadosPublicados}
+            disabled={publicando || festivalAbierto}
             title={
               festivalAbierto ? 'Cierra el festival primero' :
-              resultadosPublicados ? 'Resultados ya publicados' :
+              resultadosPublicados ? 'Resultados ya publicados — puedes republicar' :
               'Publicar resultados finales'
             }
           >
-            {publicando ? 'Publicando...' : resultadosPublicados ? '✅ Resultados publicados' : '🏆 Publicar resultados'}
+            {publicando
+              ? 'Publicando...'
+              : resultadosPublicados
+                ? '✅ Resultados publicados'
+                : '🏆 Publicar resultados'}
           </button>
         </div>
 
@@ -401,7 +417,7 @@ export default function AdminPanel() {
 
         <EstadoFestivalSincronizado
           token={adminSession.token}
-          onEstadoCambiado={setFestivalAbierto}
+          onEstadoCambiado={handleEstadoCambiado}
         />
 
         {mostrarStats && <EstadisticasVotos token={adminSession.token} />}

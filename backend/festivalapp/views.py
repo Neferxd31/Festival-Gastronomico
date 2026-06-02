@@ -64,12 +64,19 @@ def cambiar_estado_festival(request, pk):
         })
 
     festival.estado = nuevo_estado
-    festival.save(update_fields=['estado'])
+
+    # Si se abre el festival, se resetean los resultados publicados
+    if nuevo_estado == 'ABIERTO':
+        festival.resultados_publicados = False
+        festival.save(update_fields=['estado', 'resultados_publicados'])
+    else:
+        festival.save(update_fields=['estado'])
 
     return Response({
         'id': festival.id,
         'nombre': festival.nombre,
         'estado': festival.estado,
+        'resultados_publicados': festival.resultados_publicados,
         'mensaje': f'Festival actualizado a {festival.get_estado_display()} correctamente.',
     })
 
@@ -78,7 +85,6 @@ def cambiar_estado_festival(request, pk):
 @authentication_classes([AdminJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def publicar_resultados(request, pk):
-    """Publica los resultados finales del festival. Solo si está cerrado."""
     try:
         festival = Festival.objects.get(pk=pk)
     except Festival.DoesNotExist:
