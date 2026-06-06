@@ -209,7 +209,6 @@ function GridParticipantes({ token, festivalAbierto }) {
           y eliminación están deshabilitadas para preservar la integridad de los resultados.
         </div>
       )}
-
       <div className="panel-grid">
         {restaurantes.map(r => (
           <div key={r.id} className={`panel-card ${accionesDeshabilitadas ? 'panel-card--bloqueado' : ''}`}>
@@ -251,7 +250,6 @@ function GridParticipantes({ token, festivalAbierto }) {
           </div>
         ))}
       </div>
-
       <ConfirmToggleModal
         abierto={modalToggle}
         participante={restauranteToggle}
@@ -279,11 +277,11 @@ function EstadisticasVotos({ token, festivalAbierto }) {
   const { logoutAdmin } = useAuth()
   const navigate = useNavigate()
 
-  const [stats, setStats] = useState(null)
-  const [cargando, setCargando] = useState(true)
+  const [stats, setStats]         = useState(null)
+  const [cargando, setCargando]   = useState(true)
   const [ultimaAct, setUltimaAct] = useState(null)
-  const [pausado, setPausado] = useState(false)
-  const intervalRef = useRef(null)
+  const [pausado, setPausado]     = useState(false)
+  const intervalRef               = useRef(null)
 
   const fetchStats = useCallback(async () => {
     try {
@@ -494,7 +492,6 @@ function EstadisticasVotos({ token, festivalAbierto }) {
           )}
         </div>
       </div>
-
       {stats.restaurantes.length === 0 ? (
         <p className="panel-empty" style={{ color: '#666' }}>No hay restaurantes registrados.</p>
       ) : (
@@ -542,9 +539,13 @@ export default function AdminPanel() {
   const { adminSession, logoutAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const [mensajeExito, setMensajeExito] = useState(null)
-  const [tabActiva, setTabActiva] = useState('participantes')
-  const [festivalAbierto, setFestivalAbierto] = useState(null)
+  const [mensajeExito, setMensajeExito]                 = useState(null)
+  const [tabActiva, setTabActiva]                       = useState('participantes')
+  const [festivalAbierto, setFestivalAbierto]           = useState(null)
+  const [festivalId, setFestivalId]                     = useState(null)
+  const [resultadosPublicados, setResultadosPublicados] = useState(false)
+  const [publicando, setPublicando]                     = useState(false)
+  const [mensajePublicar, setMensajePublicar]           = useState(null)
 
   useEffect(() => {
     if (!adminSession) navigate('/')
@@ -553,7 +554,13 @@ export default function AdminPanel() {
   useEffect(() => {
     fetch('http://127.0.0.1:8000/api/festivales/activo/')
       .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data) setFestivalAbierto(data.estado === 'ABIERTO') })
+      .then(data => {
+        if (data) {
+          setFestivalAbierto(data.estado === 'ABIERTO')
+          setResultadosPublicados(data.resultados_publicados)
+          setFestivalId(data.id)
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -564,6 +571,48 @@ export default function AdminPanel() {
       setTimeout(() => setMensajeExito(null), 4000)
     }
   }, [location.state])
+
+  // Cuando el estado cambia, si se abre el festival se resetean los resultados
+  const handleEstadoCambiado = (estaAbierto) => {
+    setFestivalAbierto(estaAbierto)
+    if (estaAbierto) {
+      setResultadosPublicados(false)
+    }
+  }
+
+  const handlePublicarResultados = async () => {
+    if (festivalAbierto) {
+      setMensajePublicar({ texto: '⚠️ Debes cerrar el festival antes de publicar los resultados.', tipo: 'error' })
+      setTimeout(() => setMensajePublicar(null), 4000)
+      return
+    }
+
+    setPublicando(true)
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/festivales/${festivalId}/publicar-resultados/`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${adminSession.token}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (res.ok) {
+        setResultadosPublicados(true)
+        setMensajePublicar({ texto: data.mensaje, tipo: 'exito' })
+      } else {
+        setMensajePublicar({ texto: `⚠️ ${data.error}`, tipo: 'error' })
+      }
+    } catch {
+      setMensajePublicar({ texto: '⚠️ Error de conexión.', tipo: 'error' })
+    } finally {
+      setPublicando(false)
+      setTimeout(() => setMensajePublicar(null), 5000)
+    }
+  }
 
   if (!adminSession) return null
 
@@ -597,7 +646,7 @@ export default function AdminPanel() {
         <div className="panel-estado-wrapper">
           <EstadoFestivalSincronizado
             token={adminSession.token}
-            onEstadoCambiado={setFestivalAbierto}
+            onEstadoCambiado={handleEstadoCambiado}
           />
         </div>
 
@@ -606,8 +655,16 @@ export default function AdminPanel() {
           <div className="panel-mensaje-exito">✅ {mensajeExito}</div>
         )}
 
+        {/* ── MENSAJE PUBLICAR RESULTADOS ── */}
+        {mensajePublicar && (
+          <div className={`panel-mensaje-exito ${mensajePublicar.tipo === 'error' ? 'panel-mensaje-error' : ''}`}>
+            {mensajePublicar.texto}
+          </div>
+        )}
+
         {/* ── TABS ── */}
         <div className="panel-tabs">
+
           <button
             className={`panel-tab ${tabActiva === 'participantes' ? 'panel-tab--active' : ''}`}
             onClick={() => setTabActiva('participantes')}
@@ -619,6 +676,33 @@ export default function AdminPanel() {
             onClick={() => setTabActiva('estadisticas')}
           >
             📊 Estadísticas
+          </button>
+
+          {/* ── BOTÓN PUBLICAR RESULTADOS ── */}
+          <button
+            className="panel-accion-btn"
+            style={{
+              backgroundColor: festivalAbierto
+                ? '#888'
+                : resultadosPublicados
+                  ? '#16a34a'
+                  : '#2ecc71',
+              color: '#fff',
+              cursor: festivalAbierto ? 'not-allowed' : 'pointer',
+            }}
+            onClick={handlePublicarResultados}
+            disabled={publicando || festivalAbierto}
+            title={
+              festivalAbierto ? 'Cierra el festival primero' :
+              resultadosPublicados ? 'Resultados ya publicados — puedes republicar' :
+              'Publicar resultados finales'
+            }
+          >
+            {publicando
+              ? 'Publicando...'
+              : resultadosPublicados
+                ? '✅ Resultados publicados'
+                : '🏆 Publicar resultados'}
           </button>
         </div>
 
@@ -644,9 +728,9 @@ export default function AdminPanel() {
         {/* ── CONTENIDO TAB ESTADÍSTICAS ── */}
         {tabActiva === 'estadisticas' && (
           <div className="panel-tab-content">
-            <EstadisticasVotos 
-              token={adminSession.token} 
-              festivalAbierto={festivalAbierto} 
+            <EstadisticasVotos
+              token={adminSession.token}
+              festivalAbierto={festivalAbierto}
             />
           </div>
         )}

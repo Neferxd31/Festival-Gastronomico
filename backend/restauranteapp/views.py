@@ -17,7 +17,7 @@ from festivalapp.models import Festival
 @permission_classes([AllowAny])
 def listar_restaurantes(request):
     """Lista todos los restaurantes habilitados (público)."""
-    restaurantes = Restaurante.objects.filter(habilitado=True, eliminado = False).select_related('plato')
+    restaurantes = Restaurante.objects.filter(habilitado=True, eliminado=False).select_related('plato')
     serializer = RestauranteSerializer(restaurantes, many=True)
     return Response(serializer.data)
 
@@ -33,7 +33,6 @@ def crear_restaurante(request):
 
     data = serializer.validated_data
 
-    # Verificar que el festival existe
     try:
         festival = Festival.objects.get(id=data['festival_id'])
     except Festival.DoesNotExist:
@@ -47,7 +46,6 @@ def crear_restaurante(request):
         'facebook':  data.get('facebook', ''),
         'tiktok':    data.get('tiktok', ''),
     }
-    # Elimina claves vacías para no guardar ruido
     redes = {k: v for k, v in redes.items() if v}
 
     with transaction.atomic():
@@ -107,19 +105,18 @@ def toggle_restaurante(request, pk):
         restaurante = Restaurante.objects.get(pk=pk)
     except Restaurante.DoesNotExist:
         return Response({'detail': 'Restaurante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
-    
-    if restaurante.eliminado:  #bloquea cambios si está eliminado
+
+    if restaurante.eliminado:
         return Response(
             {"error": "No se puede modificar un participante eliminado."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-
     restaurante.habilitado = not restaurante.habilitado
     restaurante.save()
     return Response({'habilitado': restaurante.habilitado})
 
-#-------Eliminar restaurante -------
+
 @api_view(['DELETE'])
 @authentication_classes([AdminJWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -140,13 +137,11 @@ def eliminar_restaurante(request, pk):
             "error": "Participante no encontrado."
         }, status=404)
 
-    
-#----------Vista para la papelera de restaurantes -----------------#
+
 @api_view(['GET'])
 @authentication_classes([AdminJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def restaurantes_eliminados(request):
-
     restaurantes = Restaurante.objects.filter(
         eliminado=True
     ).select_related('plato')
@@ -154,7 +149,7 @@ def restaurantes_eliminados(request):
     serializer = RestauranteSerializer(restaurantes, many=True)
     return Response(serializer.data)
 
-#---------Vista para restaurar un restaurante eliminado -----------------#
+
 @api_view(['PATCH'])
 @authentication_classes([AdminJWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -196,12 +191,10 @@ def editar_restaurante(request, pk):
     data = serializer.validated_data
 
     with transaction.atomic():
-        # Actualiza solo los campos del restaurante que llegaron
         for campo in ('nombre', 'descripcion', 'direccion', 'contacto', 'video_url'):
             if campo in data:
                 setattr(restaurante, campo, data[campo])
 
-        # Fusiona redes sociales sin borrar las que no se enviaron
         redes = restaurante.redes_sociales or {}
         for red in ('instagram', 'facebook', 'tiktok'):
             if red in data:
@@ -212,7 +205,6 @@ def editar_restaurante(request, pk):
         restaurante.redes_sociales = redes if redes else None
         restaurante.save()
 
-        # Actualiza el plato si llegaron datos de él
         campos_plato = {
             'plato_nombre':      'nombre',
             'plato_descripcion': 'descripcion',
@@ -263,4 +255,37 @@ def estadisticas_votos(request):
         'total_votos': total_votos,
         'restaurantes': data,
         'timestamp': timezone.now().isoformat(),
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def resultados_publicos(request):
+    """Retorna el ranking público de votos por restaurante."""
+    restaurantes = (
+        Restaurante.objects
+        .filter(eliminado=False, habilitado=True)
+        .select_related('plato')
+        .annotate(votos_count=Count('votos'))
+        .order_by('-votos_count')
+    )
+
+    total_votos = sum(r.votos_count for r in restaurantes)
+
+    data = []
+    for r in restaurantes:
+        porcentaje = round((r.votos_count / total_votos) * 100, 1) if total_votos > 0 else 0
+        data.append({
+            'id': r.id,
+            'nombre': r.nombre,
+            'plato_nombre': r.plato.nombre if hasattr(r, 'plato') and r.plato else None,
+            'plato_imagen': r.plato.imagen_url if hasattr(r, 'plato') and r.plato else None,
+            'votos': r.votos_count,
+            'porcentaje': porcentaje,
+        })
+
+    return Response({
+        'total_votos': total_votos,
+        'restaurantes': data,
     })

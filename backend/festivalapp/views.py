@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from usuarioapp.authentication import AdminJWTAuthentication
 from .models import Festival
 
 
@@ -9,7 +10,6 @@ from .models import Festival
 @authentication_classes([])
 @permission_classes([AllowAny])
 def listar_festivales(request):
-    """Lista todos los festivales disponibles."""
     festivales = Festival.objects.all().values('id', 'nombre', 'estado')
     return Response(list(festivales))
 
@@ -18,10 +18,6 @@ def listar_festivales(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def obtener_festival_activo(request):
-    """
-    Retorna el festival más reciente con su estado completo.
-    Usado por el frontend público y el panel admin para conocer el estado actual.
-    """
     try:
         festival = Festival.objects.latest('created_at')
         return Response({
@@ -40,13 +36,9 @@ def obtener_festival_activo(request):
 
 
 @api_view(['PATCH'])
+@authentication_classes([AdminJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def cambiar_estado_festival(request, pk):
-    """
-    Cambia el estado del festival a ABIERTO o CERRADO.
-    Solo accesible por administradores autenticados.
-    Escenario 5: Si ocurre un error, no se aplica ningún cambio parcial.
-    """
     try:
         festival = Festival.objects.get(pk=pk)
     except Festival.DoesNotExist:
@@ -56,7 +48,6 @@ def cambiar_estado_festival(request, pk):
         )
 
     nuevo_estado = request.data.get('estado')
-
     estados_validos = [choice[0] for choice in Festival.EstadoChoices.choices]
     if nuevo_estado not in estados_validos:
         return Response(
@@ -64,7 +55,6 @@ def cambiar_estado_festival(request, pk):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Solo se guarda si el estado realmente cambia (evita escrituras innecesarias)
     if festival.estado == nuevo_estado:
         return Response({
             'id': festival.id,
@@ -74,11 +64,50 @@ def cambiar_estado_festival(request, pk):
         })
 
     festival.estado = nuevo_estado
-    festival.save(update_fields=['estado'])  # Escenario 5: atómico, solo guarda este campo
+
+    # Si se abre el festival, se resetean los resultados publicados
+    if nuevo_estado == 'ABIERTO':
+        festival.resultados_publicados = False
+        festival.save(update_fields=['estado', 'resultados_publicados'])
+    else:
+        festival.save(update_fields=['estado'])
 
     return Response({
         'id': festival.id,
         'nombre': festival.nombre,
         'estado': festival.estado,
+        'resultados_publicados': festival.resultados_publicados,
         'mensaje': f'Festival actualizado a {festival.get_estado_display()} correctamente.',
+    })
+
+
+@api_view(['PATCH'])
+@authentication_classes([AdminJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def publicar_resultados(request, pk):
+    try:
+        festival = Festival.objects.get(pk=pk)
+    except Festival.DoesNotExist:
+        return Response(
+            {'error': 'Festival no encontrado.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    if festival.estado == 'ABIERTO':
+        return Response(
+            {'error': 'No se pueden publicar los resultados mientras el festival está abierto. Cierra el festival primero.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if festival.resultados_publicados:
+        return Response(
+            {'mensaje': 'Los resultados ya estaban publicados.', 'resultados_publicados': True}
+        )
+
+    festival.resultados_publicados = True
+    festival.save(update_fields=['resultados_publicados'])
+
+    return Response({
+        'mensaje': '✅ Resultados publicados exitosamente. El podio ya es visible para todos los usuarios.',
+        'resultados_publicados': True,
     })

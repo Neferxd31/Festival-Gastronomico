@@ -9,6 +9,7 @@ import EditarParticipante from './views/EditarParticipante';
 import Participantes from './views/Participantes';
 import ParticipanteDetalle from './views/ParticipanteDetalle';
 import TrashPanel from './views/TrashPanel';
+import Resultados from './views/Resultados';
 import './App.css';
 
 export default function App() {
@@ -16,15 +17,16 @@ export default function App() {
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/"                          element={<Home />} />
-                    <Route path="/login"                     element={<Login />} />
-                    <Route path="/participantes"             element={<Participantes />} />
-                    <Route path="/participantes/:id"         element={<ParticipanteDetalle />} />
-                    <Route path="/admin/panel"               element={<AdminPanel />} />
-                    <Route path="/admin/crear-participante"          element={<CrearParticipante />} />
-                    <Route path="/admin/editar-participante/:id"     element={<EditarParticipante />} />
-                    <Route path="/ForgotPassword"            element={<ForgotPassword />} />
-                    <Route path="/admin/papelera" element={<TrashPanel />} />
+                    <Route path="/"                                   element={<Home />} />
+                    <Route path="/login"                              element={<Login />} />
+                    <Route path="/participantes"                      element={<Participantes />} />
+                    <Route path="/participantes/:id"                  element={<ParticipanteDetalle />} />
+                    <Route path="/resultados"                         element={<Resultados />} />
+                    <Route path="/admin/panel"                        element={<AdminPanel />} />
+                    <Route path="/admin/crear-participante"           element={<CrearParticipante />} />
+                    <Route path="/admin/editar-participante/:id"      element={<EditarParticipante />} />
+                    <Route path="/ForgotPassword"                     element={<ForgotPassword />} />
+                    <Route path="/admin/papelera"                     element={<TrashPanel />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
