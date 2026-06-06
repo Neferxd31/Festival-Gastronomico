@@ -2,14 +2,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('',                    views.listar_restaurantes,       name='restaurantes-publico'),
-    path('admin/',              views.listar_todos_restaurantes, name='restaurantes-admin'),
-    path('crear/',              views.crear_restaurante,         name='restaurantes-crear'),
-    path('estadisticas/',       views.estadisticas_votos,        name='restaurantes-estadisticas'),
-    path('<int:pk>/',           views.detalle_restaurante,       name='restaurantes-detalle'),
-    path('<int:pk>/toggle/',    views.toggle_restaurante,        name='restaurantes-toggle'),
-    path('<int:pk>/eliminar/', views.eliminar_restaurante, name='restaurantes-eliminar'),
-    path('eliminados/', views.restaurantes_eliminados, name='restaurantes-eliminados'),
-    path('<int:pk>/restaurar/', views.restaurar_restaurante, name='restaurar-restaurante'),
-    path('<int:pk>/editar/',    views.editar_restaurante,    name='restaurantes-editar'),
+    path('',                          views.listar_restaurantes,       name='restaurantes-publico'),
+    path('admin/',                    views.listar_todos_restaurantes, name='restaurantes-admin'),
+    path('crear/',                    views.crear_restaurante,         name='restaurantes-crear'),
+    path('estadisticas/',             views.estadisticas_votos,        name='restaurantes-estadisticas'),
+    path('resultados/',               views.resultados_publicos,       name='restaurantes-resultados'),
+    path('<int:pk>/',                 views.detalle_restaurante,       name='restaurantes-detalle'),
+    path('<int:pk>/toggle/',          views.toggle_restaurante,        name='restaurantes-toggle'),
+    path('<int:pk>/eliminar/',        views.eliminar_restaurante,      name='restaurantes-eliminar'),
+    path('eliminados/',               views.restaurantes_eliminados,   name='restaurantes-eliminados'),
+    path('<int:pk>/restaurar/',       views.restaurar_restaurante,     name='restaurar-restaurante'),
+    path('<int:pk>/editar/',          views.editar_restaurante,        name='restaurantes-editar'),
 ]

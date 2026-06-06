@@ -856,3 +856,76 @@
   .stats-row__pct       { font-size: 13px; width: 42px; }
   .panel-tab            { padding: 8px 16px; font-size: 13px; }
 }
+
+/* ── Estado del festival ── */
+.festival-estado-card {
+  background: var(--color-surface, #fff);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.festival-estado-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.festival-estado-card__titulo { font-size: 1rem; font-weight: 600; margin: 0; }
+.festival-estado-card__nombre { margin: 0; color: #64748b; font-size: 0.9rem; }
+.festival-estado-card__error  { color: #dc2626; font-size: 0.875rem; margin: 0; }
+.festival-estado-card__exito  { color: #16a34a; font-size: 0.875rem; margin: 0; }
+
+.festival-estado-card__acciones { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+
+.festival-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.festival-badge--abierto { background: #dcfce7; color: #15803d; }
+.festival-badge--cerrado { background: #fee2e2; color: #dc2626; }
+
+.festival-btn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.festival-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.festival-btn--abrir  { background: #16a34a; color: #fff; }
+.festival-btn--cerrar { background: #dc2626; color: #fff; }
+
+/* ── Aviso de festival cerrado en la grid ── */
+.panel-aviso-cerrado {
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #713f12;
+}
+
+.panel-card--bloqueado { opacity: 0.8; }
+
+/* ── Botón de acción deshabilitado ── */
+.panel-accion-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.panel-mensaje-error {
+  background-color: #fef2f2;
+  border: 1px solid #e74c3c;
+  color: #dc2626;
+}

@@ -4,7 +4,6 @@ import { googleLogout } from '@react-oauth/google'
 import '../styles/Home.css'
 import { API_URL } from '../config/api'
 
-// Hook para detectar si un elemento entró al viewport
 function useInView(options = {}) {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
@@ -27,13 +26,13 @@ export default function Home() {
   const [busqueda, setBusqueda]         = useState('')
   const [user, setUser]                 = useState(null)
   const [restaurantes, setRestaurantes] = useState([])
+  const [top3, setTop3]                 = useState([])
   const [cargando, setCargando]         = useState(true)
 
-  // Refs para animación al scroll
-  const [stepsRef, stepsVisible]   = useInView()
-  const [aboutRef, aboutVisible]   = useInView()
-  const [cardsRef, cardsVisible]   = useInView()
-  const [statsRef, statsVisible]   = useInView()
+  const [stepsRef, stepsVisible] = useInView()
+  const [aboutRef, aboutVisible] = useInView()
+  const [cardsRef, cardsVisible] = useInView()
+  const [statsRef, statsVisible] = useInView()
 
   useEffect(() => {
     const saved = localStorage.getItem('user_session')
@@ -46,6 +45,13 @@ export default function Home() {
       .then(setRestaurantes)
       .catch(() => {})
       .finally(() => setCargando(false))
+  }, [])
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/restaurantes/resultados/')
+      .then(r => r.json())
+      .then(data => setTop3(data.restaurantes?.slice(0, 3) || []))
+      .catch(() => {})
   }, [])
 
   const handleLogout = () => {
@@ -70,6 +76,7 @@ export default function Home() {
         <div className="home-nav__links">
           <Link to="/">Inicio</Link>
           <Link to="/participantes">Participantes</Link>
+          <Link to="/resultados">Resultados</Link>
           <a href="#como-funciona">Cómo funciona</a>
           {user ? (
             <div className="home-nav__user">
@@ -262,6 +269,44 @@ export default function Home() {
         )}
       </section>
 
+      {/* ── RESULTADOS PREVIEW ── */}
+      <section className="home-resultados">
+        <h2>🏆 Tabla de posiciones</h2>
+        <p className="home-participantes__sub">Los restaurantes más votados del festival</p>
+
+        {top3.length === 0 ? (
+          <p className="home-empty">Aún no hay votos registrados.</p>
+        ) : (
+          <div className="home-podio-preview">
+            {top3.map((r, i) => (
+              <Link
+                to={`/participantes/${r.id}`}
+                key={r.id}
+                className={`home-podio-card home-podio-card--${i + 1}`}
+              >
+                <span className="home-podio-card__medalla">{['🥇', '🥈', '🥉'][i]}</span>
+                {r.plato_imagen ? (
+                  <img src={r.plato_imagen} alt={r.nombre} className="home-podio-card__img" />
+                ) : (
+                  <div className="home-podio-card__img home-podio-card__img--vacia">🍽</div>
+                )}
+                <h4>{r.nombre}</h4>
+                {r.plato_nombre && (
+                  <span className="home-podio-card__plato">{r.plato_nombre}</span>
+                )}
+                <span className="home-podio-card__votos">{r.votos} votos</span>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <div className="home-ver-todos">
+          <Link to="/resultados" className="home-ver-todos__btn">
+            Ver resultados completos →
+          </Link>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="home-cta">
         <h2>¿Listo para votar?</h2>
@@ -283,6 +328,7 @@ export default function Home() {
           <div className="home-footer__links">
             <Link to="/">Inicio</Link>
             <Link to="/participantes">Participantes</Link>
+            <Link to="/resultados">Resultados</Link>
             <Link to="/login">Iniciar sesión</Link>
           </div>
         </div>
