@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { googleLogout } from "@react-oauth/google";
 import "../styles/ParticipanteDetalle.css";
+import { API_URL } from '../config/api'
 
 export default function ParticipanteDetalle() {
   const { id } = useParams();
@@ -40,7 +41,7 @@ export default function ParticipanteDetalle() {
 
   // Cargar estado del festival (abierto o cerrado)
 useEffect(() => {
-  fetch('http://127.0.0.1:8000/api/festivales/activo/')
+  fetch(`${API_URL}/api/festivales/activo/`)
     .then(res => res.ok ? res.json() : null)
     .then(data => setFestivalAbierto(data ? data.estado === 'ABIERTO' : false))
     .catch(() => setFestivalAbierto(false));
@@ -48,7 +49,7 @@ useEffect(() => {
 
   // Cargar datos del restaurante y sus comentarios
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/restaurantes/${id}/`)
+    fetch(`${API_URL}/api/restaurantes/${id}/`)
       .then((r) => {
         if (!r.ok) throw new Error();
         return r.json();
@@ -71,7 +72,7 @@ useEffect(() => {
   useEffect(() => {
     if (!user || !restaurante) return;
 
-    fetch(`http://127.0.0.1:8000/api/interacciones/${id}/verificar-voto/`, {
+    fetch(`${API_URL}/api/interacciones/${id}/verificar-voto/`, {
       headers: {
         Authorization: `Bearer ${user.token}`,
       },
@@ -106,7 +107,7 @@ useEffect(() => {
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/interacciones/${id}/votar/`,
+        `${API_URL}/api/interacciones/${id}/votar/`,
         {
           method: "POST",
           headers: {
@@ -146,7 +147,7 @@ useEffect(() => {
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/interacciones/${id}/eliminar-voto/`,
+        `${API_URL}/api/interacciones/${id}/eliminar-voto/`,
         {
           method: "DELETE",
           headers: {
@@ -209,7 +210,7 @@ useEffect(() => {
       usuario_foto: user.picture,
     };
 
-    fetch(`http://127.0.0.1:8000/api/restaurantes/${id}/comentarios/`, {
+    fetch(`${API_URL}/api/restaurantes/${id}/comentarios/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -233,7 +234,7 @@ useEffect(() => {
     if (!window.confirm("¿Seguro que quieres eliminar este comentario?"))
       return;
 
-    fetch(`http://127.0.0.1:8000/api/comentarios/${comentarioId}/`, {
+    fetch(`${API_URL}/api/comentarios/${comentarioId}/`, {
       method: "DELETE",
     })
       .then((r) => {

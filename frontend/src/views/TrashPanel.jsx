@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import '../styles/TrashPanel.css';
+import { API_URL } from '../config/api'
 
 export default function TrashPanel() {
   const { adminSession } = useAuth();
@@ -22,7 +23,7 @@ export default function TrashPanel() {
   useEffect(() => {
     if (!token) return;
 
-    fetch('http://127.0.0.1:8000/api/restaurantes/eliminados/', {
+    fetch(`${API_URL}/api/restaurantes/eliminados/`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -41,7 +42,7 @@ export default function TrashPanel() {
   const restaurar = async (id) => {
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/restaurantes/${id}/restaurar/`,
+        `${API_URL}/api/restaurantes/${id}/restaurar/`,
         {
           method: 'PATCH',
           headers: {

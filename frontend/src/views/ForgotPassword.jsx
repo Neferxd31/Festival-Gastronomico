@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "../styles/ForgotPassword.css";
 import axios from "axios";
+import { API_URL } from '../config/api'
 
 function ForgotPassword() {
   const [step, setStep] = useState(1);
@@ -21,7 +22,7 @@ function ForgotPassword() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/usuarios/ForgotPassword/",
+        `${API_URL}/api/usuarios/ForgotPassword/`,
         { email }
       );
 
@@ -41,7 +42,7 @@ function ForgotPassword() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/usuarios/reset-password/confirm/",
+        `${API_URL}/api/usuarios/reset-password/confirm/`,
         {
           email,
           token,

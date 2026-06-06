@@ -10,17 +10,29 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 2. SEGURIDAD Y ENTORNO
-# Se recomienda tener SECRET_KEY, DEBUG y ALLOWED_HOSTS en el .env
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-clave-temporal')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Convertimos la cadena de ALLOWED_HOSTS en una lista
+# ALLOWED_HOSTS — incluye automáticamente el dominio que Railway inyecta
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+RAILWAY_PUBLIC_DOMAIN = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+# Permitir cualquier subdominio *.up.railway.app por comodidad
+ALLOWED_HOSTS.append('.up.railway.app')
 
-# 3. DEFINICIÓN DE RUTAS (Importante para evitar el error ROOT_URLCONF)
+# CSRF para Railway (necesario si el admin se usa en producción)
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.up.railway.app',
+]
+extra_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if extra_csrf:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_csrf.split(',') if o.strip()]
+
+# 3. RUTAS
 ROOT_URLCONF = 'config.urls'
 
-# 4. APLICACIONES INSTALADAS
+# 4. APLICACIONES
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,35 +49,50 @@ INSTALLED_APPS = [
     'resultadoapp',
 ]
 
-# 5. MIDDLEWARES (El orden es fundamental para CORS)
+# 5. MIDDLEWARE (orden importante: CORS arriba, WhiteNoise justo después de Security)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Debe ir justo aquí
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware', # Comentado si usas @csrf_exempt
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# 6. CONFIGURACIÓN DE BASE DE DATOS (Railway / PostgreSQL)
+# 6. BASE DE DATOS — SSL solo si la URL no es local
+DATABASE_URL = os.getenv('DATABASE_URL', '')
+_ssl_require = not (
+    DATABASE_URL.startswith('sqlite')
+    or 'localhost' in DATABASE_URL
+    or '127.0.0.1' in DATABASE_URL
+)
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
+        default=DATABASE_URL,
         conn_max_age=600,
-        ssl_require=True
+        ssl_require=_ssl_require,
     )
 }
 
-# 7. CONFIGURACIÓN DE CORS (Para resolver bloqueos con Vite/React)
-# En desarrollo, esto permite que cualquier origen se conecte
-CORS_ALLOW_ALL_ORIGINS = True 
+# 7. CORS — restringido por entorno
+# Si CORS_ALLOWED_ORIGINS está definido, solo esos dominios pueden llamar a la API.
+# Si no, en DEBUG se permite todo (para desarrollo local).
+_cors_env = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
+if _cors_env:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_env.split(',') if o.strip()]
+    CORS_ALLOW_ALL_ORIGINS = False
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
 
-# 8. GOOGLE AUTH CONFIG
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+CORS_ALLOW_CREDENTIALS = True
 
-# 9. PLANTILLAS Y OTROS BÁSICOS
+# 8. GOOGLE AUTH
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID') or os.getenv('VITE_GOOGLE_CLIENT_ID')
+
+# 9. PLANTILLAS
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -84,10 +111,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# 10. ARCHIVOS ESTÁTICOS (WhiteNoise para servirlos en producción)
 STATIC_URL = 'static/'
-# Google Auth Settings
-GOOGLE_CLIENT_ID = os.getenv("VITE_GOOGLE_CLIENT_ID") 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# 11. DRF
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "usuarioapp.authentication.AdminJWTAuthentication",
@@ -97,8 +126,12 @@ REST_FRAMEWORK = {
     ],
 }
 
-#Settings para Brevo 
+# 12. Brevo
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 BREVO_SENDER_NAME = "Festival Gastronómico OTP"
 BREVO_SENDER_EMAIL = "festivalgastronomicopat@gmail.com"
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 13. Seguridad detrás del proxy de Railway (HTTPS)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

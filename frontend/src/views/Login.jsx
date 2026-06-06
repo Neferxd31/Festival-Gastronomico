@@ -4,6 +4,7 @@ import { GoogleOAuthProvider, useGoogleLogin, googleLogout } from '@react-oauth/
 import { useAuth } from '../context/AuthContext';
 import { Link } from "react-router-dom";
 import '../styles/Login.css';
+import { API_URL } from '../config/api'
 
 /* =========================
    TAB VOTANTE
@@ -30,7 +31,7 @@ function TabVotante() {
 
             const userInfo = await res.json();
 
-            const backendRes = await fetch('http://127.0.0.1:8000/api/google-login/', {
+            const backendRes = await fetch(`${API_URL}/api/google-login/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: tokenResponse.access_token }),
@@ -122,7 +123,7 @@ function TabAdmin() {
         setCargando(true);
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/usuarios/login/', {
+            const res = await fetch(`${API_URL}/api/usuarios/login/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),

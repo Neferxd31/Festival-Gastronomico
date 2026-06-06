@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import '../styles/Home.css'
+import { API_URL } from '../config/api'
 
 // Hook para detectar si un elemento entró al viewport
 function useInView(options = {}) {
@@ -40,7 +41,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/restaurantes/')
+    fetch(`${API_URL}/api/restaurantes/`)
       .then(r => r.json())
       .then(setRestaurantes)
       .catch(() => {})

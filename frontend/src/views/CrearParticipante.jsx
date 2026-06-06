@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import '../styles/CrearParticipante.css'
+import { API_URL } from '../config/api'
 
 const CAMPO_INICIAL = {
   festival_id:       '',
@@ -35,7 +36,7 @@ export default function CrearParticipante() {
 
   // Cargar festivales para el selector
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/festivales/')
+    fetch(`${API_URL}/api/festivales/`)
       .then(r => r.json())
       .then(setFestivales)
       .catch(() => {})
@@ -55,7 +56,7 @@ export default function CrearParticipante() {
 
     setCargando(true)
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/restaurantes/crear/', {
+      const res = await fetch(`${API_URL}/api/restaurantes/crear/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

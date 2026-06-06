@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { API_URL } from '../config/api'
 
 const AuthContext = createContext(null);
 
@@ -23,7 +24,7 @@ export function AuthProvider({ children }) {
         // Notificar al backend (best-effort: si falla, igual cerramos sesión)
         try {
             if (token) {
-                await fetch('http://127.0.0.1:8000/api/usuarios/logout/', {
+                await fetch(`${API_URL}/api/usuarios/logout/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

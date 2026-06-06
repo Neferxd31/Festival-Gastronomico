@@ -10,6 +10,7 @@ import ConfirmEstadoFestivalModal from '../components/modals/ConfirmEstadoFestiv
 import festivalLogo from '../assets/festival_logo.png'
 import ufpsLogo from '../assets/ufps_logo.png'
 import '../styles/AdminPanel.css'
+import { API_URL } from '../config/api'
 
 // ─────────────────────────────────────────────
 // Componente: Estado del Festival (sincronizado)
@@ -24,7 +25,7 @@ function EstadoFestivalSincronizado({ token, onEstadoCambiado }) {
   const [nuevoEstado, setNuevoEstado]   = useState(null)
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/festivales/activo/')
+    fetch(`${API_URL}/api/festivales/activo/`)
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setFestival(data) })
       .catch(() => setError('Error al cargar el festival.'))
@@ -41,7 +42,7 @@ function EstadoFestivalSincronizado({ token, onEstadoCambiado }) {
     setMensaje(null)
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/festivales/${festival.id}/estado/`,
+        `${API_URL}/api/festivales/${festival.id}/estado/`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -140,7 +141,7 @@ function GridParticipantes({ token, festivalAbierto }) {
 
   const cargar = useCallback(() => {
     setCargando(true)
-    fetch('http://127.0.0.1:8000/api/restaurantes/admin/', {
+    fetch(`${API_URL}/api/restaurantes/admin/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => {
@@ -162,7 +163,7 @@ function GridParticipantes({ token, festivalAbierto }) {
     setModalToggle(false)
     setToggling(id)
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/restaurantes/${id}/toggle/`, {
+      const res = await fetch(`${API_URL}/api/restaurantes/${id}/toggle/`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -179,7 +180,7 @@ function GridParticipantes({ token, festivalAbierto }) {
   const eliminarParticipante = async () => {
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/restaurantes/${seleccionado.id}/eliminar/`,
+        `${API_URL}/api/restaurantes/${seleccionado.id}/eliminar/`,
         { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }
       )
       if (res.ok) {
@@ -287,7 +288,7 @@ function EstadisticasVotos({ token, festivalAbierto }) {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/restaurantes/estadisticas/', {
+      const res = await fetch(`${API_URL}/api/restaurantes/estadisticas/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (res.status === 401) { logoutAdmin(); navigate('/'); return }
@@ -551,7 +552,7 @@ export default function AdminPanel() {
   }, [adminSession, navigate])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/festivales/activo/')
+    fetch(`${API_URL}/api/festivales/activo/`)
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setFestivalAbierto(data.estado === 'ABIERTO') })
       .catch(() => {})

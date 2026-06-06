@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import '../styles/CrearParticipante.css'
+import { API_URL } from '../config/api'
 
 const CAMPO_VACIO = {
   nombre:            '',
@@ -74,7 +75,7 @@ export default function EditarParticipante() {
     }
 
     // Fallback: si entró por URL directa, busca en la lista admin
-    fetch('http://127.0.0.1:8000/api/restaurantes/admin/', {
+    fetch(`${API_URL}/api/restaurantes/admin/`, {
       headers: { Authorization: `Bearer ${adminSession?.token}` },
     })
       .then(r => r.json())
@@ -100,7 +101,7 @@ export default function EditarParticipante() {
     setCargando(true)
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/restaurantes/${id}/editar/`, {
+      const res = await fetch(`${API_URL}/api/restaurantes/${id}/editar/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
