@@ -591,7 +591,7 @@ export default function AdminPanel() {
     setPublicando(true)
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/festivales/${festivalId}/publicar-resultados/`,
+        `${API_URL}/api/festivales/${festivalId}/publicar-resultados/`,
         {
           method: 'PATCH',
           headers: {

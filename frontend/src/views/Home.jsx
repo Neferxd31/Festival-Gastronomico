@@ -48,7 +48,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/restaurantes/resultados/')
+    fetch(`${API_URL}/api/restaurantes/resultados/`)
       .then(r => r.json())
       .then(data => setTop3(data.restaurantes?.slice(0, 3) || []))
       .catch(() => {})

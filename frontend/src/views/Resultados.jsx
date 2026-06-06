@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import '../styles/Resultados.css'
+import { API_URL } from '../config/api'
 
 const MEDALLAS = ['🥇', '🥈', '🥉']
 
@@ -16,7 +17,7 @@ export default function Resultados() {
   }, [])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/restaurantes/resultados/')
+    fetch(`${API_URL}/api/restaurantes/resultados/`)
       .then(r => r.json())
       .then(setDatos)
       .catch(() => {})
