@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import '../styles/Resultados.css'
 import { API_URL } from '../config/api'
+import festivalLogo from '../assets/festival_logo.png'
+import ufpsLogo from '../assets/ufps_logo.png'
 
 const MEDALLAS = ['🥇', '🥈', '🥉']
 
 export default function Resultados() {
   const [datos, setDatos] = useState(null)
+  const [festival, setFestival] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [user, setUser] = useState(null)
 
@@ -17,12 +20,22 @@ export default function Resultados() {
   }, [])
 
   useEffect(() => {
-    fetch(`${API_URL}/api/restaurantes/resultados/`)
-      .then(r => r.json())
-      .then(setDatos)
+    fetch(`${API_URL}/api/festivales/activo/`)
+      .then(r => r.ok ? r.json() : null)
+      .then(f => {
+        setFestival(f)
+        const publicados = f && f.estado === 'CERRADO' && f.resultados_publicados
+        if (publicados) {
+          return fetch(`${API_URL}/api/restaurantes/resultados/`)
+            .then(r => r.json())
+            .then(setDatos)
+        }
+      })
       .catch(() => {})
       .finally(() => setCargando(false))
   }, [])
+
+  const publicados = festival && festival.estado === 'CERRADO' && festival.resultados_publicados
 
   const handleLogout = () => {
     googleLogout()
@@ -35,7 +48,9 @@ export default function Resultados() {
 
       {/* NAVBAR */}
       <nav className="res-nav">
-        <Link to="/" className="res-nav__brand">🍽 Festival Gastronómico</Link>
+        <Link to="/" className="res-nav__brand">
+          <img src={festivalLogo} alt="Festival Gastronómico" className="res-nav__logo" />
+        </Link>
         <div className="res-nav__links">
           <Link to="/">Inicio</Link>
           <Link to="/participantes">Participantes</Link>
@@ -65,6 +80,11 @@ export default function Resultados() {
 
       {cargando ? (
         <div className="res-estado">Cargando resultados...</div>
+      ) : !publicados ? (
+        <div className="res-estado">
+          🔒 Los resultados aún no han sido publicados.<br />
+          Estarán disponibles cuando el festival haya cerrado y se publiquen oficialmente.
+        </div>
       ) : !datos || datos.restaurantes.length === 0 ? (
         <div className="res-estado">Aún no hay votos registrados.</div>
       ) : (
@@ -151,7 +171,11 @@ export default function Resultados() {
 
       {/* FOOTER */}
       <footer className="res-footer">
-        <span>© 2026 Festival Gastronómico</span>
+        <div className="res-footer__logos">
+          <img src={ufpsLogo} alt="UFPS" className="res-footer__logo" />
+          <img src={festivalLogo} alt="Festival Gastronómico" className="res-footer__logo" />
+        </div>
+        <span>© {new Date().getFullYear()} Festival Gastronómico Los Patios</span>
       </footer>
 
     </div>

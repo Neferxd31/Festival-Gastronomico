@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import '../styles/Home.css'
 import { API_URL } from '../config/api'
+import festivalLogo from '../assets/festival_logo.png'
+import ufpsLogo from '../assets/ufps_logo.png'
 
 function useInView(options = {}) {
   const ref = useRef(null)
@@ -27,6 +29,7 @@ export default function Home() {
   const [user, setUser]                 = useState(null)
   const [restaurantes, setRestaurantes] = useState([])
   const [top3, setTop3]                 = useState([])
+  const [resultadosVisibles, setResultadosVisibles] = useState(false)
   const [cargando, setCargando]         = useState(true)
 
   const [stepsRef, stepsVisible] = useInView()
@@ -48,9 +51,20 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    fetch(`${API_URL}/api/restaurantes/resultados/`)
-      .then(r => r.json())
-      .then(data => setTop3(data.restaurantes?.slice(0, 3) || []))
+    // Solo mostrar resultados si el festival está cerrado y publicados
+    fetch(`${API_URL}/api/festivales/activo/`)
+      .then(r => r.ok ? r.json() : null)
+      .then(festival => {
+        if (!festival) return
+        const publicados = festival.estado === 'CERRADO' && festival.resultados_publicados
+        setResultadosVisibles(publicados)
+        if (publicados) {
+          fetch(`${API_URL}/api/restaurantes/resultados/`)
+            .then(r => r.json())
+            .then(data => setTop3(data.restaurantes?.slice(0, 3) || []))
+            .catch(() => {})
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -70,8 +84,7 @@ export default function Home() {
       {/* ── NAVBAR ── */}
       <nav className="home-nav">
         <Link to="/" className="home-nav__brand">
-          <span className="home-nav__icon">🍽</span>
-          Festival Gastronómico
+          <img src={festivalLogo} alt="Festival Gastronómico" className="home-nav__logo" />
         </Link>
         <div className="home-nav__links">
           <Link to="/">Inicio</Link>
@@ -269,43 +282,45 @@ export default function Home() {
         )}
       </section>
 
-      {/* ── RESULTADOS PREVIEW ── */}
-      <section className="home-resultados">
-        <h2>🏆 Tabla de posiciones</h2>
-        <p className="home-participantes__sub">Los restaurantes más votados del festival</p>
+      {/* ── RESULTADOS PREVIEW (solo si publicados) ── */}
+      {resultadosVisibles && (
+        <section className="home-resultados">
+          <h2>🏆 Tabla de posiciones</h2>
+          <p className="home-participantes__sub">Los restaurantes más votados del festival</p>
 
-        {top3.length === 0 ? (
-          <p className="home-empty">Aún no hay votos registrados.</p>
-        ) : (
-          <div className="home-podio-preview">
-            {top3.map((r, i) => (
-              <Link
-                to={`/participantes/${r.id}`}
-                key={r.id}
-                className={`home-podio-card home-podio-card--${i + 1}`}
-              >
-                <span className="home-podio-card__medalla">{['🥇', '🥈', '🥉'][i]}</span>
-                {r.plato_imagen ? (
-                  <img src={r.plato_imagen} alt={r.nombre} className="home-podio-card__img" />
-                ) : (
-                  <div className="home-podio-card__img home-podio-card__img--vacia">🍽</div>
-                )}
-                <h4>{r.nombre}</h4>
-                {r.plato_nombre && (
-                  <span className="home-podio-card__plato">{r.plato_nombre}</span>
-                )}
-                <span className="home-podio-card__votos">{r.votos} votos</span>
-              </Link>
-            ))}
+          {top3.length === 0 ? (
+            <p className="home-empty">Aún no hay votos registrados.</p>
+          ) : (
+            <div className="home-podio-preview">
+              {top3.map((r, i) => (
+                <Link
+                  to={`/participantes/${r.id}`}
+                  key={r.id}
+                  className={`home-podio-card home-podio-card--${i + 1}`}
+                >
+                  <span className="home-podio-card__medalla">{['🥇', '🥈', '🥉'][i]}</span>
+                  {r.plato_imagen ? (
+                    <img src={r.plato_imagen} alt={r.nombre} className="home-podio-card__img" />
+                  ) : (
+                    <div className="home-podio-card__img home-podio-card__img--vacia">🍽</div>
+                  )}
+                  <h4>{r.nombre}</h4>
+                  {r.plato_nombre && (
+                    <span className="home-podio-card__plato">{r.plato_nombre}</span>
+                  )}
+                  <span className="home-podio-card__votos">{r.votos} votos</span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="home-ver-todos">
+            <Link to="/resultados" className="home-ver-todos__btn">
+              Ver resultados completos →
+            </Link>
           </div>
-        )}
-
-        <div className="home-ver-todos">
-          <Link to="/resultados" className="home-ver-todos__btn">
-            Ver resultados completos →
-          </Link>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── CTA ── */}
       <section className="home-cta">
@@ -322,7 +337,7 @@ export default function Home() {
       <footer className="home-footer">
         <div className="home-footer__inner">
           <div className="home-footer__brand">
-            <span>🍽 Festival Gastronómico</span>
+            <img src={festivalLogo} alt="Festival Gastronómico" className="home-footer__logo" />
             <small>Apoyando el talento culinario local</small>
           </div>
           <div className="home-footer__links">
@@ -331,9 +346,12 @@ export default function Home() {
             <Link to="/resultados">Resultados</Link>
             <Link to="/login">Iniciar sesión</Link>
           </div>
+          <div className="home-footer__colaboradores">
+            <img src={ufpsLogo} alt="UFPS" className="home-footer__logo home-footer__logo--colab" />
+          </div>
         </div>
         <div className="home-footer__bottom">
-          <span>© 2026 Festival Gastronómico. Todos los derechos reservados.</span>
+          <span>© {new Date().getFullYear()} Festival Gastronómico Los Patios. Todos los derechos reservados.</span>
         </div>
       </footer>
 

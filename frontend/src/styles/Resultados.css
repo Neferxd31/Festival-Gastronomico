@@ -24,7 +24,10 @@
   font-size: 18px;
   font-weight: 700;
   text-decoration: none;
+  display: flex;
+  align-items: center;
 }
+.res-nav__logo { height: 44px; width: auto; display: block; }
 .res-nav__links {
   display: flex;
   align-items: center;
@@ -335,6 +338,20 @@
   color: #444;
   font-size: 13px;
   border-top: 1px solid #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.res-footer__logos {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.res-footer__logo {
+  height: 44px;
+  width: auto;
+  display: block;
 }
 
 @media (max-width: 640px) {
