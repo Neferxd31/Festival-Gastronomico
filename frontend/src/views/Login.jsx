@@ -187,8 +187,7 @@ function TabAdmin() {
 export default function Login() {
     const [tab, setTab] = useState('votante');
 
-    // 🔥 AQUÍ ESTÁ LA CORRECCIÓN
-    const clientId = "266067035625-stfd6fl5r3b355l6sb2uj6h8je46n4lu.apps.googleusercontent.com";
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
     return (
         <GoogleOAuthProvider clientId={clientId}>
