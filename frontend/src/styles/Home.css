@@ -654,19 +654,25 @@
   color: #555;
 }
 
+.home-footer__inner {
+  align-items: center;
+}
+.home-footer__brand {
+  align-items: flex-start;
+}
 .home-footer__logo {
-  height: 48px;
+  height: 56px;
   width: auto;
   display: block;
-}
-.home-footer__logo--colab {
-  height: 56px;
-  filter: brightness(0.9);
+  object-fit: contain;
 }
 .home-footer__colaboradores {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+}
+.home-footer__colaboradores .home-footer__logo {
+  height: 48px;
 }
 
 .home-footer__links {
