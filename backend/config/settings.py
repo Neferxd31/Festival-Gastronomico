@@ -135,3 +135,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 13. Seguridad detrás del proxy de Railway (HTTPS)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# 14. Override de DB para pruebas: SQLite en memoria (rápido y aislado)
+import sys
+if 'test' in sys.argv or os.getenv('USE_TEST_DB') == '1':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
