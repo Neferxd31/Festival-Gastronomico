@@ -30,7 +30,10 @@ function ForgotPassword() {
       setStep(2);
 
     } catch (err) {
-      setError("No fue posible enviar el código.");
+      const data = err?.response?.data || {}
+      const detail = data.detail || "No fue posible enviar el código."
+      const extra = data.brevo_body || data.error || ""
+      setError(extra ? `${detail} (${extra})` : detail);
     }
   };
 
