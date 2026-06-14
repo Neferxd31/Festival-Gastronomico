@@ -129,24 +129,16 @@ class ResetPasswordAPI(APIView):
         try:
             api_instance.send_transac_email(send_smtp_email)
         except ApiException as e:
-            # Exponemos el detalle de Brevo para diagnóstico
+            # Log interno para diagnóstico; al cliente no le exponemos detalles
             print(f"[BREVO ApiException] status={e.status} body={e.body}")
             return Response(
-                {
-                    "detail": "No fue posible enviar el correo.",
-                    "brevo_status": e.status,
-                    "brevo_body": str(e.body),
-                },
+                {"detail": "No fue posible enviar el correo."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         except Exception as e:
             print(f"[BREVO Exception] type={type(e).__name__} msg={e}")
             return Response(
-                {
-                    "detail": "Error inesperado al enviar el correo.",
-                    "error": str(e),
-                    "type": type(e).__name__,
-                },
+                {"detail": "No fue posible enviar el correo."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
