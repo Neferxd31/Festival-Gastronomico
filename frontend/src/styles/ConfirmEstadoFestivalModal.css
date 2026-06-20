@@ -1,0 +1,157 @@
+/* src/styles/ConfirmEstadoFestivalModal.css */
+
+.cefm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 15, 20, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: cefm-fade-in 0.18s ease-out;
+}
+
+.cefm-box {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: cefm-pop-in 0.22s ease-out;
+  border-top: 5px solid var(--cefm-accent, #4caf50);
+}
+
+.cefm-box--abrir {
+  --cefm-accent: #2e9e44;
+}
+
+.cefm-box--cerrar {
+  --cefm-accent: #e23d3d;
+}
+
+.cefm-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+  color: #1f2330;
+}
+
+.cefm-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  background: var(--cefm-accent, #4caf50);
+  color: #fff;
+}
+
+.cefm-texto {
+  font-size: 0.97rem;
+  line-height: 1.5;
+  color: #4b4f5a;
+  margin: 0 0 14px;
+}
+
+.cefm-texto--pregunta {
+  font-weight: 600;
+  color: #1f2330;
+  margin-bottom: 22px;
+}
+
+.cefm-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cefm-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+}
+
+.cefm-btn:active {
+  transform: scale(0.97);
+}
+
+.cefm-btn--cancelar {
+  background: #eef0f3;
+  color: #2c2f38;
+}
+
+.cefm-btn--cancelar:hover {
+  background: #e0e3e8;
+}
+
+.cefm-btn--confirmar {
+  background: #2e9e44;
+  color: #fff;
+}
+
+.cefm-btn--confirmar:hover {
+  background: #268038;
+  box-shadow: 0 6px 16px rgba(46, 158, 68, 0.35);
+}
+
+.cefm-btn--peligro {
+  background: #e23d3d;
+  color: #fff;
+}
+
+.cefm-btn--peligro:hover {
+  background: #c92f2f;
+  box-shadow: 0 6px 16px rgba(226, 61, 61, 0.35);
+}
+
+@keyframes cefm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cefm-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsividad */
+@media (max-width: 480px) {
+  .cefm-box {
+    padding: 22px 18px 18px;
+    border-radius: 14px;
+  }
+
+  .cefm-titulo {
+    font-size: 1.15rem;
+  }
+
+  .cefm-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .cefm-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px 18px;
+  }
+}
