@@ -79,68 +79,103 @@ useEffect(() => {
     })
       .then((r) => r.json())
       .then((data) => {
-        if (data.ya_voto) {
-          setVotado(true);
-          setVotoEnEste(data.voto_en_este || false);
-          if (data.cedula) setCedula(data.cedula);
-        }
-      })
-      .catch(() => {});
+  // La cédula se sincroniza SIEMPRE con el backend,
+  // sin importar si el usuario ya votó en este restaurante o no.
+  if (data.cedula) setCedula(data.cedula);
+
+  if (data.ya_voto) {
+    setVotado(true);
+    setVotoEnEste(data.voto_en_este || false);
+  }
+})
+.catch(() => {});
   }, [user, restaurante]);
 
   const handleVotar = async () => {
-    if (!user) {
-      localStorage.setItem("redirect_after_login", `/participantes/${id}`);
-      navigate("/login");
-      return;
-    }
+  if (!user) {
+    localStorage.setItem("redirect_after_login", `/participantes/${id}`);
+    navigate("/login");
+    return;
+  }
 
-    const cedulaAEnviar = cedula.trim();
-    if (!cedulaAEnviar) {
-      setToast({
-        mensaje: "Por favor ingresa tu cédula para votar.",
-        tipo: "error",
-      });
-      setTimeout(() => setToast(null), 3500);
-      return;
-    }
+  const cedulaAEnviar = cedula.trim();
+  if (!cedulaAEnviar) {
+    setToast({
+      mensaje: "Por favor ingresa tu cédula para votar.",
+      tipo: "error",
+    });
+    setTimeout(() => setToast(null), 3500);
+    return;
+  }
 
+  // Si el usuario editó la cédula, primero la persistimos en la BD
+  // antes de intentar votar, para que votar_restaurante no la rechace.
+  if (editandoCedula && user.votante_id) {
     try {
-      const res = await fetch(
-        `${API_URL}/api/interacciones/${id}/votar/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ cedula: cedulaAEnviar }),
-        }
-      );
+      const resCedula = await fetch(`${API_URL}/api/update-cedula/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          votante_id: user.votante_id,
+          cedula: cedulaAEnviar,
+        }),
+      });
+      const dataCedula = await resCedula.json();
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setVotado(true);
-        setVotoEnEste(true);
-        setEditandoCedula(false);
-        setToast({ mensaje: "¡Voto registrado con éxito!", tipo: "exito" });
-        setTimeout(() => setToast(null), 3500);
-      } else {
+      if (!resCedula.ok) {
         setToast({
-          mensaje: data.detail || "No se pudo registrar el voto.",
+          mensaje: dataCedula.message || "No se pudo actualizar la cédula.",
           tipo: "error",
         });
         setTimeout(() => setToast(null), 3500);
+        return; // No intentamos votar si la cédula no se pudo guardar
       }
     } catch {
       setToast({
-        mensaje: "Error de conexión. Intenta de nuevo.",
+        mensaje: "Error de conexión al actualizar la cédula.",
+        tipo: "error",
+      });
+      setTimeout(() => setToast(null), 3500);
+      return;
+    }
+  }
+
+  try {
+    const res = await fetch(
+      `${API_URL}/api/interacciones/${id}/votar/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ cedula: cedulaAEnviar }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setVotado(true);
+      setVotoEnEste(true);
+      setEditandoCedula(false);
+      setToast({ mensaje: "¡Voto registrado con éxito!", tipo: "exito" });
+      setTimeout(() => setToast(null), 3500);
+    } else {
+      setToast({
+        mensaje: data.detail || "No se pudo registrar el voto.",
         tipo: "error",
       });
       setTimeout(() => setToast(null), 3500);
     }
-  };
+  } catch {
+    setToast({
+      mensaje: "Error de conexión. Intenta de nuevo.",
+      tipo: "error",
+    });
+    setTimeout(() => setToast(null), 3500);
+  }
+};
 
   const handleEliminarVoto = async () => {
     if (!window.confirm("¿Seguro que quieres eliminar tu voto?")) return;
