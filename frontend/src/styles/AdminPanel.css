@@ -24,7 +24,7 @@
 .panel-screen {
   min-height: 100vh;
   background-color: var(--panel-bg);
-  background-image: url('../assets/festival_logo.png');
+  background-image: url('../assets/logo.webp');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 600px auto;

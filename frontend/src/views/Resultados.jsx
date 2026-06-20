@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
 import '../styles/Resultados.css'
 import { API_URL } from '../config/api'
-import festivalLogo from '../assets/festival_logo.png'
+import festivalLogo from '../assets/logo.webp'
 import ufpsLogo from '../assets/ufps_logo.png'
 
 const MEDALLAS = ['🥇', '🥈', '🥉']
